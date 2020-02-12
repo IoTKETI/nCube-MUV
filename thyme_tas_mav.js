@@ -16,18 +16,16 @@
 var net = require('net');
 var ip = require('ip');
 var moment = require('moment');
+var fs = require('fs');
 
 var mavlink = require('./mavlibrary/mavlink.js');
 
 var _server = null;
 
 var mavPort = null;
-var ltePort = null;
 
 var mavPortNum = '/dev/ttyUSB5';
 var mavBaudrate = '57600';
-var ltePortNum = '/dev/ttyUSB1';
-var lteBaudrate = '115200';
 
 exports.ready = function tas_ready() {
     if(my_drone_type === 'dji') {
@@ -63,10 +61,6 @@ exports.ready = function tas_ready() {
         mavBaudrate = '57600';
         mavPortOpening();
     }
-
-    ltePortNum = '/dev/ttyUSB1';
-    lteBaudrate = '115200';
-    ltePortOpening();
 };
 
 var spawn = require('child_process').spawn;
@@ -438,11 +432,58 @@ function mavPortData(data) {
     }
 }
 
-var gpi = {};
-gpi.GLOBAL_POSITION_INT = {};
+var fc = {};
+try {
+    fc = JSON.parse(fs.readFileSync('fc_data_model.json', 'utf8'));
+}
+catch (e) {
+    fc = "{\n" +
+        "                \"beartbeat\": {\n" +
+        "                    \"type\": 2,\n" +
+        "                        \"autopilot\": 3,\n" +
+        "                        \"base_mode\": 0,\n" +
+        "                        \"custom_mode\": 0,\n" +
+        "                        \"system_status\": 0,\n" +
+        "                        \"mavlink_version\": 1\n" +
+        "                },\n" +
+        "                \"attitude\": {\n" +
+        "                    \"time_boot_ms\": 123456789,\n" +
+        "                        \"roll\": 0.0,\n" +
+        "                        \"pitch\": 0.0,\n" +
+        "                        \"yaw\": 0.0,\n" +
+        "                        \"rollspeed\": 0.0,\n" +
+        "                        \"pitchspeed\": 0.0,\n" +
+        "                        \"yawspeed\": 0.0\n" +
+        "                },\n" +
+        "                \"global_position_int\": {\n" +
+        "                    \"time_boot_ms\": 123456789,\n" +
+        "                        \"lat\": 0,\n" +
+        "                        \"lon\": 0,\n" +
+        "                        \"alt\": 0,\n" +
+        "                        \"relative_alt\": 0,\n" +
+        "                        \"vx\": 0,\n" +
+        "                        \"vy\": 0,\n" +
+        "                        \"vz\": 0,\n" +
+        "                        \"hdg\": 65535\n" +
+        "                },\n" +
+        "                \"battery_status\": {\n" +
+        "                    \"id\": 0,\n" +
+        "                    \"battery_function\": 0,\n" +
+        "                    \"type\": 3,\n" +
+        "                    \"temperature\": 32767,\n" +
+        "                    \"voltages\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],\n" +
+        "                    \"current_battery\": -1,\n" +
+        "                    \"current_consumed\": -1,\n" +
+        "                    \"energy_consumed\": -1,\n" +
+        "                    \"battery_remaining\": -1,\n" +
+        "                    \"time_remaining\": 0,\n" +
+        "                    \"charge_state\": 0\n" +
+        "                    }\n" +
+        "                }\n" +
+        "            }";
 
-var hb = {};
-hb.HEARTBEAT = {};
+    fs.writeFileSync('fc_data_model.json', JSON.stringify(fc, null, 4), 'utf8');
+}
 
 var flag_base_mode = 0;
 
@@ -481,25 +522,6 @@ function parseMav(mavPacket) {
     // }
 
     if (msgid == '21') { // #33
-        if(authResult == 'done') {
-            if (secPort.isOpen) {
-                var len = mavPacket.length/2;
-                const tr_ch = new Uint8Array(5 + len);
-                tr_ch[0] = 0x5a;
-                tr_ch[1] = 0xa5;
-                tr_ch[2] = 0xf7;
-                tr_ch[3] = (len / 256);
-                tr_ch[4] = (len % 256);
-
-                for (var idx = 0; idx < len; idx++) {
-                    tr_ch[5 + idx] = parseInt(mavPacket.substr(idx*2, 2), 16);
-                }
-
-                const message = new Buffer.from(tr_ch.buffer);
-                secPort.write(message);
-            }
-        }
-
         if (ver == 'fd') {
             var base_offset = 20;
             var time_boot_ms = mavPacket.substr(base_offset, 8).toLowerCase();
@@ -525,13 +547,14 @@ function parseMav(mavPacket) {
             relative_alt = mavPacket.substr(base_offset, 8).toLowerCase();
         }
 
-        gpi.GLOBAL_POSITION_INT.time_boot_ms = Buffer.from(time_boot_ms, 'hex').readUInt32LE(0);
-        gpi.GLOBAL_POSITION_INT.lat = Buffer.from(lat, 'hex').readInt32LE(0);
-        gpi.GLOBAL_POSITION_INT.lon = Buffer.from(lon, 'hex').readInt32LE(0);
-        gpi.GLOBAL_POSITION_INT.alt = Buffer.from(alt, 'hex').readInt32LE(0);
-        gpi.GLOBAL_POSITION_INT.relative_alt = Buffer.from(relative_alt, 'hex').readInt32LE(0);
+        fc.global_position_int.time_boot_ms = Buffer.from(time_boot_ms, 'hex').readUInt32LE(0);
+        fc.global_position_int.lat = Buffer.from(lat, 'hex').readInt32LE(0);
+        fc.global_position_int.lon = Buffer.from(lon, 'hex').readInt32LE(0);
+        fc.global_position_int.alt = Buffer.from(alt, 'hex').readInt32LE(0);
+        fc.global_position_int.relative_alt = Buffer.from(relative_alt, 'hex').readInt32LE(0);
 
-        //console.log(gpi);
+        var fc_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone +'/global_position_int';
+        msw_mqtt_client.publish(fc_topic, JSON.stringify(fc.global_position_int));
     }
 
     else if (msgid == '4c') { // #76 : COMMAND_LONG
@@ -556,25 +579,6 @@ function parseMav(mavPacket) {
     }
 
     else if (msgid == '00') { // #00 : HEARTBEAT
-        if(authResult == 'done') {
-            if (secPort.isOpen) {
-                len = mavPacket.length/2;
-                const tr_ch = new Uint8Array(5 + len);
-                tr_ch[0] = 0x5a;
-                tr_ch[1] = 0xa5;
-                tr_ch[2] = 0xf9;
-                tr_ch[3] = (len / 256);
-                tr_ch[4] = (len % 256);
-
-                for (idx = 0; idx < len; idx++) {
-                    tr_ch[5 + idx] = parseInt(mavPacket.substr(idx*2, 2), 16);
-                }
-
-                const message = new Buffer.from(tr_ch.buffer);
-                secPort.write(message);
-            }
-        }
-
         if (ver == 'fd') {
             base_offset = 20;
             var custom_mode = mavPacket.substr(base_offset, 8).toLowerCase();
@@ -605,35 +609,23 @@ function parseMav(mavPacket) {
         }
 
         //console.log(mavPacket);
-        hb.HEARTBEAT.type = Buffer.from(type, 'hex').readUInt8(0);
-        hb.HEARTBEAT.autopilot = Buffer.from(autopilot, 'hex').readUInt8(0);
-        hb.HEARTBEAT.base_mode = Buffer.from(base_mode, 'hex').readUInt8(0);
-        hb.HEARTBEAT.custom_mode = Buffer.from(custom_mode, 'hex').readUInt32LE(0);
-        hb.HEARTBEAT.system_status = Buffer.from(system_status, 'hex').readUInt8(0);
-        hb.HEARTBEAT.mavlink_version = Buffer.from(mavlink_version, 'hex').readUInt8(0);
+        fc.heartbeat.type = Buffer.from(type, 'hex').readUInt8(0);
+        fc.heartbeat.autopilot = Buffer.from(autopilot, 'hex').readUInt8(0);
+        fc.heartbeat.base_mode = Buffer.from(base_mode, 'hex').readUInt8(0);
+        fc.heartbeat.custom_mode = Buffer.from(custom_mode, 'hex').readUInt32LE(0);
+        fc.heartbeat.system_status = Buffer.from(system_status, 'hex').readUInt8(0);
+        fc.heartbeat.mavlink_version = Buffer.from(mavlink_version, 'hex').readUInt8(0);
 
-        if(hb.HEARTBEAT.base_mode & 0x80) {
+        fc_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone +'/heartbeat';
+        msw_mqtt_client.publish(fc_topic, JSON.stringify(fc.heartbeat));
+
+        if(fc.heartbeat.base_mode & 0x80) {
             if(flag_base_mode == 0) {
                 flag_base_mode = 1;
-
-                // my_sortie_name = 'disarm';
-                // my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
-                // sh_adn.del_resource(my_cnt_name+'?rcn=0', function () {
-                //     console.log('delete container named disarm')
-                // });
-
-                //lte_mission_name = lte_parent_mission_name + '/' + my_sortie_name;
-                // sh_adn.del_resource(lte_mission_name+'?rcn=0', function () {
-                //     console.log('delete container named disarm')
-                // });
 
                 my_sortie_name = moment().format('YYYY_MM_DD_T_hh_mm');
                 my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
                 sh_adn.crtct(my_parent_cnt_name+'?rcn=0', my_sortie_name, 0, function (rsc, res_body, count) {
-                });
-
-                lte_mission_name = lte_parent_mission_name + '/' + my_sortie_name;
-                sh_adn.crtct(lte_parent_mission_name+'?rcn=0', my_sortie_name, 0, function (rsc, res_body, count) {
                 });
             }
         }
@@ -641,145 +633,10 @@ function parseMav(mavPacket) {
             flag_base_mode = 0;
             my_sortie_name = 'disarm';
             my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
-            // sh_adn.crtct(my_parent_cnt_name+'?rcn=0', my_sortie_name, 0, function (rsc, res_body, count) {
-            // });
-
-            lte_mission_name = lte_parent_mission_name + '/' + my_sortie_name;
-            // sh_adn.crtct(lte_parent_mission_name+'?rcn=0', my_sortie_name, 0, function (rsc, res_body, count) {
-            // });
         }
 
         //console.log(hb);
     }
 }
 
-function ltePortOpening() {
-    if (ltePort == null) {
-        ltePort = new SerialPort(ltePortNum, {
-            baudRate: parseInt(lteBaudrate, 10)
-        });
-
-        ltePort.on('open', ltePortOpen);
-        ltePort.on('close', ltePortClose);
-        ltePort.on('error', ltePortError);
-        ltePort.on('data', ltePortData);
-    }
-    else {
-        if (ltePort.isOpen) {
-
-        }
-        else {
-            ltePort.open();
-        }
-    }
-}
-
-function ltePortOpen() {
-    console.log('ltePort open. ' + ltePortNum + ' Data rate: ' + lteBaudrate);
-
-    setInterval(lteReqGetRssi, 2000);
-}
-
-function ltePortClose() {
-    console.log('ltePort closed.');
-
-    setTimeout(ltePortOpening, 2000);
-}
-
-function ltePortError(error) {
-    var error_str = error.toString();
-    console.log('[ltePort error]: ' + error.message);
-    if (error_str.substring(0, 14) == "Error: Opening") {
-
-    }
-    else {
-        console.log('[ltePort error]: ' + error);
-    }
-
-    setTimeout(ltePortOpening, 2000);
-}
-
-function lteReqGetRssi() {
-    if(ltePort != null) {
-        if (ltePort.isOpen) {
-            //var message = new Buffer.from('AT+CSQ\r');
-            var message = new Buffer.from('AT@DBG\r');
-            ltePort.write(message);
-        }
-    }
-}
-
-var count = 0;
-var strRssi = '';
-
-function ltePortData(data) {
-    strRssi += data.toString();
-
-    //console.log(strRssi);
-
-    var arrRssi = strRssi.split('OK');
-
-    if(arrRssi.length >= 2) {
-        //console.log(arrRssi);
-
-        var strLteQ = arrRssi[0].replace(/ /g, '');
-        var arrLteQ = strLteQ.split(',');
-
-        for(var idx in arrLteQ) {
-            if(arrLteQ.hasOwnProperty(idx)) {
-                //console.log(arrLteQ[idx]);
-                var arrQValue = arrLteQ[idx].split(':');
-                if(arrQValue[0] == '@DBG') {
-                    gpi.GLOBAL_POSITION_INT.plmn = arrQValue[2];
-                }
-                else if(arrQValue[0] == 'Band') {
-                    gpi.GLOBAL_POSITION_INT.band = parseInt(arrQValue[1]);
-                }
-                else if(arrQValue[0] == 'EARFCN') {
-                    gpi.GLOBAL_POSITION_INT.earfcn = parseInt(arrQValue[1]);
-                }
-                else if(arrQValue[0] == 'Bandwidth') {
-                    gpi.GLOBAL_POSITION_INT.bandwidth = parseInt(arrQValue[1].replace('MHz', ''));
-                }
-                else if(arrQValue[0] == 'PCI') {
-                    gpi.GLOBAL_POSITION_INT.pci = parseInt(arrQValue[1]);
-                }
-                else if(arrQValue[0] == 'Cell-ID') {
-                    gpi.GLOBAL_POSITION_INT.cell_id = arrQValue[1];
-                }
-                else if(arrQValue[0] == 'GUTI') {
-                    gpi.GLOBAL_POSITION_INT.guti = arrQValue[1];
-                }
-                else if(arrQValue[0] == 'TAC') {
-                    gpi.GLOBAL_POSITION_INT.tac = parseInt(arrQValue[1]);
-                }
-                else if(arrQValue[0] == 'RSRP') {
-                    gpi.GLOBAL_POSITION_INT.rsrp = parseFloat(arrQValue[1].replace('dbm', ''));
-                }
-                else if(arrQValue[0] == 'RSRQ') {
-                    gpi.GLOBAL_POSITION_INT.rsrq = parseFloat(arrQValue[1].replace('dbm', ''));
-                }
-                else if(arrQValue[0] == 'RSSI') {
-                    gpi.GLOBAL_POSITION_INT.rssi = parseFloat(arrQValue[1].replace('dbm', ''));
-                }
-                else if(arrQValue[0] == 'SINR') {
-                    gpi.GLOBAL_POSITION_INT.sinr = parseFloat(arrQValue[1].replace('db', ''));
-                }
-            }
-        }
-
-        //console.log(gpi);
-
-        setTimeout(sendLteRssi, 0, gpi);
-
-        strRssi = '';
-    }
-}
-
-function sendLteRssi(gpi) {
-    var parent = lte_mission_name+'?rcn=0';
-    sh_adn.crtci(parent, 0, gpi, null, function () {
-
-    });
-}
 

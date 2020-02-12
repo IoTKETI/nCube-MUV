@@ -1,0 +1,43 @@
+{
+    "beartbeat": {
+        "type": 2,
+        "autopilot": 3,
+        "base_mode": 0,
+        "custom_mode": 0,
+        "system_status": 0,
+        "mavlink_version": 1
+    },
+    "attitude": {
+        "time_boot_ms": 123456789,
+        "roll": 0.0,
+        "pitch": 0.0,
+        "yaw": 0.0,
+        "rollspeed": 0.0,
+        "pitchspeed": 0.0,
+        "yawspeed": 0.0
+    },
+    "global_position_int": {
+        "time_boot_ms": 123456789,
+        "lat": 0,
+        "lon": 0,
+        "alt": 0,
+        "relative_alt": 0,
+        "vx": 0,
+        "vy": 0,
+        "vz": 0,
+        "hdg": 65535
+    },
+    "battery_status": {
+        "id": 0,
+        "battery_function": 0,
+        "type": 3,
+        "temperature": 32767,
+        "voltages": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "current_battery": -1,
+        "current_consumed": -1,
+        "energy_consumed": -1,
+        "battery_remaining": -1,
+        "time_remaining": 0,
+        "charge_state": 0
+    }
+}

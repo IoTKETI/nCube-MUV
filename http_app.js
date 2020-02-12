@@ -325,7 +325,7 @@ function create_sub_all(count, callback) {
     }
 }
 
-var drone_info = {};
+global.drone_info = {};
 
 function retrieve_my_cnt_name(callback) {
     sh_adn.rtvct('/Mobius/' + conf.ae.approval_gcs +'/approval/'+conf.ae.name+'/la', 0, function (rsc, res_body, count) {
@@ -748,3 +748,17 @@ function send_to_Mobius(topic, content_each_obj, gap) {
         });
     }, gap, topic, content_each_obj);
 }
+
+setInterval(function () {
+    if (sh_state === 'crtci') {
+        var fc = {};
+        fc.global_position_int = {};
+        fc.global_position_int.time_boot_ms = parseInt(Math.random()*100);
+        fc.global_position_int.lat = parseInt(Math.random()*100);
+        fc.global_position_int.lon = parseInt(Math.random()*100);
+        fc.global_position_int.alt = parseInt(Math.random()*100);
+
+        var fc_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone +'/global_position_int';
+        msw_mqtt_client.publish(fc_topic, JSON.stringify(fc.global_position_int));
+    }
+}, 1500);
