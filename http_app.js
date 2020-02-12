@@ -749,16 +749,17 @@ function send_to_Mobius(topic, content_each_obj, gap) {
     }, gap, topic, content_each_obj);
 }
 
-setInterval(function () {
-    if (sh_state === 'crtci') {
-        var fc = {};
-        fc.global_position_int = {};
-        fc.global_position_int.time_boot_ms = parseInt(Math.random()*100);
-        fc.global_position_int.lat = parseInt(Math.random()*100);
-        fc.global_position_int.lon = parseInt(Math.random()*100);
-        fc.global_position_int.alt = parseInt(Math.random()*100);
-
-        var fc_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone +'/global_position_int';
-        msw_mqtt_client.publish(fc_topic, JSON.stringify(fc.global_position_int));
-    }
-}, 1500);
+// for test
+// setInterval(function () {
+//     if (sh_state === 'crtci') {
+//         var fc = {};
+//         fc.global_position_int = {};
+//         fc.global_position_int.time_boot_ms = parseInt(Math.random()*100);
+//         fc.global_position_int.lat = parseInt(Math.random()*100);
+//         fc.global_position_int.lon = parseInt(Math.random()*100);
+//         fc.global_position_int.alt = parseInt(Math.random()*100);
+//
+//         var fc_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone +'/global_position_int';
+//         msw_mqtt_client.publish(fc_topic, JSON.stringify(fc.global_position_int));
+//     }
+// }, 1500);
