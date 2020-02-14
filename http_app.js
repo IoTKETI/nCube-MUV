@@ -26,7 +26,7 @@ var exec = require('child_process').exec;
 
 global.sh_adn = require('./http_adn');
 var noti = require('./noti');
-//var tas_mav = require('./thyme_tas_mav');
+var tas_mav = require('./thyme_tas_mav');
 //var tas_sec = require('./thyme_tas_sec');
 //var tas_mission = require('./thyme_tas_mission');
 
