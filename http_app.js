@@ -647,11 +647,19 @@ function mqtt_connect(serverip, gcs_noti_topic, noti_topic) {
     }
 
     mqtt_client.on('connect', function () {
-        mqtt_client.subscribe(gcs_noti_topic);
-        console.log('[mqtt_connect] gcs_noti_topic : ' + gcs_noti_topic);
+        console.log('fc_mqtt is connected');
 
-        mqtt_client.subscribe(noti_topic);
-        console.log('[mqtt_connect] noti_topic : ' + noti_topic);
+        if(gcs_noti_topic != '') {
+            mqtt_client.subscribe(gcs_noti_topic, function () {
+                console.log('[mqtt_connect] gcs_noti_topic is subscribed: ' + gcs_noti_topic);
+            });
+        }
+
+        if(noti_topic != '') {
+            mqtt_client.subscribe(noti_topic, function () {
+                console.log('[mqtt_connect] noti_topic is subscribed:  ' + noti_topic);
+            });
+        }
     });
 
     mqtt_client.on('message', function (topic, message) {
@@ -719,7 +727,7 @@ function msw_mqtt_connect(broker_ip, port, noti_topic) {
     }
 
     msw_mqtt_client.on('connect', function () {
-        console.log('[msw_mqtt_connect] connected to ' + broker_ip);
+        console.log('msw_mqtt connected to ' + broker_ip);
         for(var idx in noti_topic) {
             if(noti_topic.hasOwnProperty(idx)) {
                 msw_mqtt_client.subscribe(noti_topic[idx]);
