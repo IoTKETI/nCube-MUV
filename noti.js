@@ -127,28 +127,14 @@ exports.mqtt_noti_action = function(topic_arr, jsonObj) {
                     _this.response_mqtt(resp_topic, 2001, '', conf.ae.id, rqi, '', topic_arr[5]);
                 }
                 else {
-                    for (var i = 0; i < conf.sub.length; i++) {
-                        if (conf.sub[i].parent.split('/')[conf.sub[i].parent.split('/').length - 1] === path_arr[path_arr.length - 2]) {
-                            if (conf.sub[i].name === path_arr[path_arr.length - 1]) {
-                                console.log('mqtt ' + bodytype + ' notification <----');
+                    console.log('mqtt ' + bodytype + ' notification <----');
 
-                                resp_topic = '/oneM2M/resp/' + topic_arr[3] + '/' + topic_arr[4] + '/' + topic_arr[5];
-                                _this.response_mqtt(resp_topic, 2001, '', conf.ae.id, rqi, '', topic_arr[5]);
+                    resp_topic = '/oneM2M/resp/' + topic_arr[3] + '/' + topic_arr[4] + '/' + topic_arr[5];
+                    _this.response_mqtt(resp_topic, 2001, '', conf.ae.id, rqi, '', topic_arr[5]);
 
-                                console.log('mqtt response - 2001 ---->');
+                    console.log('mqtt response - 2001 ---->');
 
-                                if (path_arr[path_arr.length - 2] === 'Res_auth') {
-                                    console.log(cinObj);
-                                    tas_sec.toSecBoard(cinObj);
-                                }
-                                else if (path_arr[path_arr.length - 2] === 'micro') {
-                                    console.log(cinObj);
-                                    tas_mission.request_to_mission(cinObj);
-                                }
-                                break;
-                            }
-                        }
-                    }
+                    msw_mqtt_client.publish(path_arr.join('/').replace('/'+path_arr[path_arr.length-1], ''), JSON.stringify(cinObj));
                 }
             }
         });

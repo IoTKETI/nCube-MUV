@@ -127,31 +127,42 @@ function git_clone(msw_name, repository_url) {
     var directory_name = msw_name + '_' + repo_arr[repo_arr.length-1].replace('.git', '');
 
     try {
-        require('fs-extra').removeSync('./' + directory_name);
+        if(fs.existsSync('./' + directory_name)) {
+
+            setTimeout(git_pull, 10, msw_name, directory_name);
+        }
+        else {
+            try {
+                require('fs-extra').removeSync('./' + directory_name);
+            }
+            catch (e) {
+                console.log(e.message);
+            }
+
+            var gitClone = spawn('git', ['clone', repository_url, directory_name]);
+
+            gitClone.stdout.on('data', function(data) {
+                console.log('stdout: ' + data);
+            });
+
+            gitClone.stderr.on('data', function(data) {
+                console.log('stderr: ' + data);
+            });
+
+            gitClone.on('exit', function(code) {
+                console.log('exit: ' + code);
+
+                setTimeout(set_msw_config, 10, msw_name, directory_name);
+            });
+
+            gitClone.on('error', function(code) {
+                console.log('error: ' + code);
+            });
+        }
     }
     catch (e) {
         console.log(e.message);
     }
-
-    var gitClone = spawn('git', ['clone', repository_url, directory_name]);
-
-    gitClone.stdout.on('data', function(data) {
-        console.log('stdout: ' + data);
-    });
-
-    gitClone.stderr.on('data', function(data) {
-        console.log('stderr: ' + data);
-    });
-
-    gitClone.on('exit', function(code) {
-        console.log('exit: ' + code);
-
-        setTimeout(set_msw_config, 10, msw_name, directory_name);
-    });
-
-    gitClone.on('error', function(code) {
-        console.log('error: ' + code);
-    });
 }
 
 var msw_config = {};
@@ -177,6 +188,42 @@ function set_msw_config(msw_name, directory_name) {
         console.log('create ./' + directory_name + '/config.json');
 
         setTimeout(npm_install, 10, msw_name, directory_name);
+    }
+}
+
+function git_pull(msw_name, directory_name) {
+    try {
+        if (process.platform === 'win32') {
+            var cmd = 'git'
+        }
+        else {
+            cmd = 'git'
+        }
+
+        var gitPull = spawn(cmd, ['pull'], { cwd: process.cwd() + '/' + directory_name });
+
+        gitPull.stdout.on('data', function(data) {
+            console.log('stdout: ' + data);
+        });
+
+        gitPull.stderr.on('data', function(data) {
+            console.log('stderr: ' + data);
+        });
+
+        gitPull.on('exit', function(code) {
+            console.log('exit: ' + code);
+
+            setTimeout(set_msw_config, 10, msw_name, directory_name);
+        });
+
+        gitPull.on('error', function(code) {
+            console.log('error: ' + code);
+
+            setTimeout(npm_install, 10, msw_name, directory_name);
+        });
+    }
+    catch (e) {
+        console.log(e.message);
     }
 }
 
@@ -238,10 +285,6 @@ function fork_msw(msw_name, directory_name) {
 
         setTimeout(npm_install, 10, directory_name);
     });
-}
-
-function git_pull() {
-
 }
 
 function ae_response_action(status, res_body, callback) {
