@@ -36,12 +36,12 @@ exports.ready = function tas_ready() {
 var aggr_content = {};
 function send_aggr_to_Mobius(topic, content_each, gap) {
     if(aggr_content.hasOwnProperty(topic)) {
-        var timestamp = moment().format('YYYY-MM-DDThh:mm:ssSSS');
+        var timestamp = moment().format('YYYY-MM-DDTHH:mm:ssSSS');
         aggr_content[topic][timestamp] = content_each;
     }
     else {
         aggr_content[topic] = {};
-        timestamp = moment().format('YYYY-MM-DDThh:mm:ssSSS');
+        timestamp = moment().format('YYYY-MM-DDTHH:mm:ssSSS');
         aggr_content[topic][timestamp] = content_each;
 
         setTimeout(function () {

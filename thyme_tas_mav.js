@@ -97,12 +97,12 @@ var aggr_content = {};
 
 function send_aggr_to_Mobius(topic, content_each, gap) {
     if(aggr_content.hasOwnProperty(topic)) {
-        var timestamp = moment().format('YYYY-MM-DDThh:mm:ssSSS');
+        var timestamp = moment().format('YYYY-MM-DDTHH:mm:ssSSS');
         aggr_content[topic][timestamp] = content_each;
     }
     else {
         aggr_content[topic] = {};
-        timestamp = moment().format('YYYY-MM-DDThh:mm:ssSSS');
+        timestamp = moment().format('YYYY-MM-DDTHH:mm:ssSSS');
         aggr_content[topic][timestamp] = content_each;
 
         setTimeout(function () {
@@ -623,7 +623,7 @@ function parseMav(mavPacket) {
             if(flag_base_mode == 0) {
                 flag_base_mode = 1;
 
-                my_sortie_name = moment().format('YYYY_MM_DD_T_hh_mm');
+                my_sortie_name = moment().format('YYYY_MM_DD_T_HH_mm');
                 my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
                 sh_adn.crtct(my_parent_cnt_name+'?rcn=0', my_sortie_name, 0, function (rsc, res_body, count) {
                 });
