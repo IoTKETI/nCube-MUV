@@ -1674,6 +1674,8 @@ mavlink.messages.sys_status = function(onboard_control_sensors_present, onboard_
 mavlink.messages.sys_status.prototype = new mavlink.message;
 
 mavlink.messages.sys_status.prototype.pack = function(mav) {
+    mav.seq = (mav.seq + sequence) % 256;	// add
+    sequence++;	// add
     return mavlink.message.prototype.pack.call(this, mav, this.crc_extra, jspack.Pack(this.format, [ this.onboard_control_sensors_present, this.onboard_control_sensors_enabled, this.onboard_control_sensors_health, this.load, this.voltage_battery, this.current_battery, this.drop_rate_comm, this.errors_comm, this.errors_count1, this.errors_count2, this.errors_count3, this.errors_count4, this.battery_remaining]));
 }
 

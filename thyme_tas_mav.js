@@ -22,9 +22,10 @@ var mavlink = require('./mavlibrary/mavlink.js');
 
 var _server = null;
 
+var socket_mav = null;
 var mavPort = null;
 
-var mavPortNum = '/dev/ttyUSB5';
+var mavPortNum = '/dev/ttyAMA0';
 var mavBaudrate = '57600';
 
 exports.ready = function tas_ready() {
@@ -48,49 +49,53 @@ exports.ready = function tas_ready() {
                     console.log('error ', e);
                 });
             });
+
+            _server.listen(conf.ae.tas_mav_port, function () {
+                console.log('TCP Server (' + ip.address() + ') for TAS is listening on port ' + conf.ae.tas_mav_port);
+
+                // setTimeout(dji_sdk_launch, 1500);
+            });
         }
-
-        _server.listen(conf.ae.tas_mav_port, function () {
-            console.log('TCP Server (' + ip.address() + ') for TAS is listening on port ' + conf.ae.tas_mav_port);
-
-            setTimeout(dji_sdk_lunch, 1500);
-        });
     }
     else if(my_drone_type === 'pixhawk') {
-        mavPortNum = '/dev/ttyUSB5';
+        mavPortNum = '/dev/ttyAMA0';
         mavBaudrate = '57600';
         mavPortOpening();
     }
+    else {
+
+    }
 };
 
-var spawn = require('child_process').spawn;
-var djiosdk = null;
 
-function dji_sdk_lunch() {
-    djiosdk = spawn('./djiosdk-Mobius', ['UserConfig.txt']);
-
-    djiosdk.stdout.on('data', function(data) {
-        console.log('stdout: ' + data);
-    });
-
-    djiosdk.stderr.on('data', function(data) {
-        console.log('stderr: ' + data);
-
-        setTimeout(dji_sdk_lunch, 1500);
-    });
-
-    djiosdk.on('exit', function(code) {
-        console.log('exit: ' + code);
-
-        setTimeout(dji_sdk_lunch, 1500);
-    });
-
-    djiosdk.on('error', function(code) {
-        console.log('error: ' + code);
-
-        setTimeout(dji_sdk_lunch, 1500);
-    });
-}
+// var spawn = require('child_process').spawn;
+// var djiosdk = null;
+//
+// function dji_sdk_launch() {
+//     djiosdk = spawn('./djiosdk-Mobius', ['UserConfig.txt']);
+//
+//     djiosdk.stdout.on('data', function(data) {
+//         console.log('stdout: ' + data);
+//     });
+//
+//     djiosdk.stderr.on('data', function(data) {
+//         console.log('stderr: ' + data);
+//
+//         //setTimeout(dji_sdk_launch, 1500);
+//     });
+//
+//     djiosdk.on('exit', function(code) {
+//         console.log('exit: ' + code);
+//
+//         setTimeout(dji_sdk_launch, 1000);
+//     });
+//
+//     djiosdk.on('error', function(code) {
+//         console.log('error: ' + code);
+//
+//         //setTimeout(dji_sdk_launch, 1000);
+//     });
+// }
 
 
 var aggr_content = {};
@@ -115,9 +120,8 @@ function send_aggr_to_Mobius(topic, content_each, gap) {
     }
 }
 
-function mavlinkGenerateMessage(type, params) {
-    var TEST_GEN_MAVLINK_SYSTEM_ID = 8;
-    const mavlinkParser = new MAVLink(null/*logger*/, TEST_GEN_MAVLINK_SYSTEM_ID, 0);
+function mavlinkGenerateMessage(sysId, type, params) {
+    const mavlinkParser = new MAVLink(null/*logger*/, sysId, 0);
     try {
         var mavMsg = null;
         var genMsg = null;
@@ -176,6 +180,21 @@ function mavlinkGenerateMessage(type, params) {
                     params.vz,
                     params.hdg);
                 break;
+            case mavlink.MAVLINK_MSG_ID_SYS_STATUS:
+                mavMsg = new mavlink.messages.sys_status(params.onboard_control_sensors_present,
+                    params.onboard_control_sensors_enabled,
+                    params.onboard_control_sensors_health,
+                    params.load,
+                    params.voltage_battery,
+                    params.current_battery,
+                    params.battery_remaining,
+                    params.drop_rate_comm,
+                    params.errors_comm,
+                    params.errors_count1,
+                    params.errors_count2,
+                    params.errors_count3,
+                    params.errors_count4);
+                break;
         }
     }
     catch( e ) {
@@ -183,7 +202,7 @@ function mavlinkGenerateMessage(type, params) {
     }
 
     if (mavMsg) {
-        genMsg = new Buffer(mavMsg.pack(mavlinkParser));
+        genMsg = Buffer.from(mavMsg.pack(mavlinkParser));
         //console.log('>>>>> MAVLINK OUTGOING MSG: ' + genMsg.toString('hex'));
     }
 
@@ -192,12 +211,12 @@ function mavlinkGenerateMessage(type, params) {
 
 function sendDroneMessage(type, params) {
     try {
-        var msg = mavlinkGenerateMessage(type, params);
+        var msg = mavlinkGenerateMessage(my_system_id, type, params);
         if (msg == null) {
             console.log("mavlink message is null");
         }
         else {
-            console.log('msg: ', msg);
+            // console.log('msg: ', msg);
             // console.log('msg_seq : ', msg.slice(2,3));
             //mqtt_client.publish(my_cnt_name, msg.toString('hex'));
             //_this.send_aggr_to_Mobius(my_cnt_name, msg.toString('hex'), 1500);
@@ -213,6 +232,8 @@ var dji = {};
 var params = {};
 
 function dji_handler(data) {
+    socket_mav = this;
+
     var data_arr = data.toString().split(',');
 
     dji.flightstatus = data_arr[0].replace('[', '');
@@ -227,7 +248,14 @@ function dji_handler(data) {
     dji.vx = data_arr[9];
     dji.vy = data_arr[10];
     dji.vz = data_arr[11];
-    dji.battery = data_arr[12].replace(']', '');
+    dji.bat_percentage = data_arr[12];
+    dji.bat_voltage = data_arr[13];
+    dji.bat_current = data_arr[14];
+    dji.bat_capacity = data_arr[15].replace(']', '');
+
+    // Debug
+    var debug_string = dji.lat + ', ' + dji.lon + ', ' + dji.alt + ', ' + dji.relative_alt;
+    mqtt_client.publish(my_parent_cnt_name + '/Debug', debug_string);
 
     // #0 PING
     params.time_usec = dji.timestamp;
@@ -284,12 +312,28 @@ function dji_handler(data) {
     params.lat = parseFloat(dji.lat) * 1E7;
     params.lon = parseFloat(dji.lon) * 1E7;
     params.alt = parseFloat(dji.alt) * 1000;
-    params.relative_alt = dji.relative_alt;
-    params.vx = dji.vx;
-    params.vy = dji.vy;
-    params.vz = dji.vz;
+    params.relative_alt = parseFloat(dji.relative_alt) * 1000;
+    params.vx = parseFloat(dji.vx) * 100;
+    params.vy = parseFloat(dji.vy) * 100;
+    params.vz = parseFloat(dji.vz) * 100;
     params.hdg = 0;
     setTimeout(sendDroneMessage, 1, mavlink.MAVLINK_MSG_ID_GLOBAL_POSITION_INT, params);
+
+    // #5 MAVLINK_SYS_STATUS(#1)
+    params.onboard_control_sensors_present = mavlink.MAV_SYS_STATUS_SENSOR_3D_GYRO & mavlink.MAV_SYS_STATUS_SENSOR_GPS;
+    params.onboard_control_sensors_enabled = mavlink.MAV_SYS_STATUS_SENSOR_3D_GYRO & mavlink.MAV_SYS_STATUS_SENSOR_GPS;
+    params.onboard_control_sensors_health = mavlink.MAV_SYS_STATUS_SENSOR_3D_GYRO & mavlink.MAV_SYS_STATUS_SENSOR_GPS;
+    params.load = 500;
+    params.voltage_battery = dji.bat_voltage;
+    params.current_battery = dji.bat_current;
+    params.battery_remaining = dji.bat_percentagea;
+    params.drop_rate_comm = 8;
+    params.errors_comm = 0;
+    params.errors_count1 = 0;
+    params.errors_count2 = 0;
+    params.errors_count3 = 0;
+    params.errors_count4 = 0;
+    setTimeout(sendDroneMessage, 1, mavlink.MAVLINK_MSG_ID_SYS_STATUS, params);
 }
 
 exports.noti = function (path_arr, cinObj, socket) {
@@ -306,10 +350,40 @@ exports.noti = function (path_arr, cinObj, socket) {
 };
 
 exports.gcs_noti_handler = function (message) {
-    if (mavPort != null) {
-        if (mavPort.isOpen) {
-            mavPort.write(message);
+    if(my_drone_type === 'dji') {
+        var com_msg = message.toString();
+        var com_message = com_msg.split(":");
+        var msg_command = com_message[0];
+
+        if (msg_command == 't' || msg_command == 'h' || msg_command == 'l') {
+            socket_mav.write(message);
         }
+        else if (msg_command == 'g') {
+            if(com_message.length < 5) {
+                for(var i = 0; i < (5-com_message.length); i++) {
+                    com_msg += ':0';
+                }
+                message = Buffer.from(com_msg);
+            }
+            socket_mav.write(message);
+
+            var msg_lat = com_message[1].substring(0,7);
+            var msg_lon = com_message[2].substring(0,7);
+            var msg_alt = com_message[3].substring(0,3);
+        }
+        else if (msg_command == 'm'|| msg_command == 'a') {
+            socket_mav.write(message);
+        }
+    }
+    else if(my_drone_type === 'pixhawk') {
+        if (mavPort != null) {
+            if (mavPort.isOpen) {
+                mavPort.write(message);
+            }
+        }
+    }
+    else {
+
     }
 };
 
@@ -405,7 +479,7 @@ function mavPortData(data) {
                 }
 
                 if(refLen == mavPacket.length) {
-                    mqtt_client.publish(my_cnt_name, new Buffer.from(mavPacket, 'hex'));
+                    mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
                     send_aggr_to_Mobius(my_cnt_name, mavPacket, 1500);
                     mavStrPacket = '';
 
@@ -553,8 +627,7 @@ function parseMav(mavPacket) {
         fc.global_position_int.alt = Buffer.from(alt, 'hex').readInt32LE(0);
         fc.global_position_int.relative_alt = Buffer.from(relative_alt, 'hex').readInt32LE(0);
 
-        var fc_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone +'/global_position_int';
-        msw_mqtt_client.publish(fc_topic, JSON.stringify(fc.global_position_int));
+        muv_mqtt_client.publish(muv_pub_fc_gpi_topic, JSON.stringify(fc.global_position_int));
     }
 
     else if (msgid == '4c') { // #76 : COMMAND_LONG
@@ -616,8 +689,7 @@ function parseMav(mavPacket) {
         fc.heartbeat.system_status = Buffer.from(system_status, 'hex').readUInt8(0);
         fc.heartbeat.mavlink_version = Buffer.from(mavlink_version, 'hex').readUInt8(0);
 
-        fc_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone +'/heartbeat';
-        msw_mqtt_client.publish(fc_topic, JSON.stringify(fc.heartbeat));
+        muv_mqtt_client.publish(muv_pub_fc_hb_topic, JSON.stringify(fc.heartbeat));
 
         if(fc.heartbeat.base_mode & 0x80) {
             if(flag_base_mode == 0) {

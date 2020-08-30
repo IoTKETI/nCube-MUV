@@ -12,8 +12,8 @@
  * Created by Il Yeup, Ahn in KETI on 2016-09-21.
  */
 
-var tas_sec = require('./thyme_tas_sec');
-var tas_mission = require('./thyme_tas_mission');
+//var tas_sec = require('./thyme_tas_sec');
+//var tas_mission = require('./thyme_tas_mission');
 
 var _this = this;
 
@@ -134,7 +134,7 @@ exports.mqtt_noti_action = function(topic_arr, jsonObj) {
 
                     console.log('mqtt response - 2001 ---->');
 
-                    msw_mqtt_client.publish(path_arr.join('/').replace('/'+path_arr[path_arr.length-1], ''), JSON.stringify(cinObj));
+                    muv_mqtt_client.publish(path_arr.join('/').replace('/'+path_arr[path_arr.length-1], ''), JSON.stringify(cinObj));
                 }
             }
         });

@@ -1,5 +1,9 @@
 /**
- * Copyright (c) 2018, OCEAN, KETI
+ * Created by Il Yeup, Ahn in KETI on 2017-02-25.
+ */
+
+/**
+ * Copyright (c) 2018, OCEAN
  * All rights reserved.
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
@@ -8,30 +12,52 @@
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * Created by Il Yeup, Ahn in KETI on 2016-08-19.
- */
-
+    // for TAS
 var fs = require('fs');
-var shortid = require('shortid');
+var spawn = require('child_process').spawn;
+var djiosdk = null;
 
-global.resp_mqtt_ri_arr = [];
+var drone_type = {};
+try {
+    drone_type = JSON.parse(fs.readFileSync('drone_type.json', 'utf8'));
+}
+catch (e) {
+    drone_type.type = 'pixhawk';
+    fs.writeFileSync('drone_type.json', JSON.stringify(drone_type, null, 4), 'utf8');
+}
 
-global.resp_mqtt_path_arr = {};
-global.socket_q = {};
+function dji_sdk_launch() {
+    djiosdk = spawn('./djiosdk-Mobius', ['UserConfig.txt']);
 
-global.conf = require('./conf.js');
+    djiosdk.stdout.on('data', function(data) {
+        console.log('stdout: ' + data);
+    });
 
-//fs.writeFileSync('aei.json', JSON.stringify(conf, null, 4), 'utf-8');
+    djiosdk.stderr.on('data', function(data) {
+        console.log('stderr: ' + data);
 
-//global.sh_state = 'rtvae';
-global.sh_state = 'crtae';
+        //setTimeout(dji_sdk_launch, 1500);
+    });
 
-global.mqtt_client = null;
-global.muv_mqtt_client = null;
+    djiosdk.on('exit', function(code) {
+        console.log('exit: ' + code);
 
-// AE core
+        // setTimeout(dji_sdk_launch, 1000);
+    });
 
-require('./http_app');
+    djiosdk.on('error', function(code) {
+        console.log('error: ' + code);
 
+        //setTimeout(dji_sdk_launch, 1000);
+    });
+}
+
+if (drone_type.type == 'dji') {
+    dji_sdk_launch();
+}
+else {
+    setInterval(function () {
+        console.log('>>>>>>>>>>>>>>>> Idle loop <<<<<<<<<<<<<<<<');
+    }, (1000 * 60 * 60));
+}
 

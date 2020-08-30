@@ -44,6 +44,7 @@ global.my_sortie_name = 'disarm';
 
 global.my_drone_type = 'pixhawk';
 global.my_secure = 'off';
+global.my_system_id = 8;
 
 global.Req_auth = '';
 global.Res_auth = '';
@@ -65,9 +66,12 @@ var app = express();
 // ?????? ????????.
 var server = null;
 var noti_topic = '';
-var gcs_noti_topic = '';
+var muv_sub_gcs_topic = '';
 
-var msw_noti_topic = [];
+var muv_sub_msw_topic = [];
+
+global.muv_pub_fc_gpi_topic = '';
+global.muv_pub_fc_hb_topic = '';
 
 // ready for mqtt
 for(var i = 0; i < conf.sub.length; i++) {
@@ -116,82 +120,43 @@ function ready_for_notification() {
                 }
             }
         }
-        mqtt_connect(conf.cse.host, gcs_noti_topic, noti_topic);
+        mqtt_connect(conf.cse.host, muv_sub_gcs_topic, noti_topic);
 
-        msw_mqtt_connect('localhost', 1883, msw_noti_topic);
+        muv_mqtt_connect('localhost', 1883, muv_sub_msw_topic);
     }
 }
 
-function git_clone(msw_name, repository_url) {
-    var repo_arr = repository_url.split('/');
-    var directory_name = msw_name + '_' + repo_arr[repo_arr.length-1].replace('.git', '');
-
+function git_clone(mission_name, directory_name, repository_url) {
     try {
-        if(fs.existsSync('./' + directory_name)) {
-
-            setTimeout(git_pull, 10, msw_name, directory_name);
-        }
-        else {
-            try {
-                require('fs-extra').removeSync('./' + directory_name);
-            }
-            catch (e) {
-                console.log(e.message);
-            }
-
-            var gitClone = spawn('git', ['clone', repository_url, directory_name]);
-
-            gitClone.stdout.on('data', function(data) {
-                console.log('stdout: ' + data);
-            });
-
-            gitClone.stderr.on('data', function(data) {
-                console.log('stderr: ' + data);
-            });
-
-            gitClone.on('exit', function(code) {
-                console.log('exit: ' + code);
-
-                setTimeout(set_msw_config, 10, msw_name, directory_name);
-            });
-
-            gitClone.on('error', function(code) {
-                console.log('error: ' + code);
-            });
-        }
+        require('fs-extra').removeSync('./' + directory_name);
     }
     catch (e) {
         console.log(e.message);
     }
+
+    var gitClone = spawn('git', ['clone', repository_url, directory_name]);
+
+    gitClone.stdout.on('data', function(data) {
+        console.log('stdout: ' + data);
+    });
+
+    gitClone.stderr.on('data', function(data) {
+        console.log('stderr: ' + data);
+    });
+
+    gitClone.on('exit', function(code) {
+        console.log('exit: ' + code);
+
+        //setTimeout(set_msw_config, 10, msw_name, directory_name);
+        setTimeout(requireMsw, 5000, mission_name, directory_name);
+    });
+
+    gitClone.on('error', function(code) {
+        console.log('error: ' + code);
+    });
 }
 
-var msw_config = {};
-function set_msw_config(msw_name, directory_name) {
-    try {
-        msw_config = JSON.parse(fs.readFileSync('./' + directory_name + '/config.json', 'utf8'));
-
-        msw_config.name = msw_name;
-        msw_config.gcs = drone_info.gcs;
-        msw_config.drone = drone_info.drone;
-
-        fs.writeFileSync('./' + directory_name + '/config.json', JSON.stringify(msw_config, null, 4), 'utf8');
-        console.log('update ./' + directory_name + '/config.json');
-
-        setTimeout(npm_install, 10, msw_name, directory_name);
-    }
-    catch (e) {
-        msw_config.gcs = drone_info.gcs;
-        msw_config.drone = drone_info.drone;
-        msw_config.serialPortNum = '/dev/ttyUSB3';
-        msw_config.serialBaudrate = '57600';
-        fs.writeFileSync('./' + directory_name + '/config.json', JSON.stringify(msw_config, null, 4), 'utf8');
-        console.log('create ./' + directory_name + '/config.json');
-
-        setTimeout(npm_install, 10, msw_name, directory_name);
-    }
-}
-
-function git_pull(msw_name, directory_name) {
+function git_pull(mission_name, directory_name) {
     try {
         if (process.platform === 'win32') {
             var cmd = 'git'
@@ -213,21 +178,50 @@ function git_pull(msw_name, directory_name) {
         gitPull.on('exit', function(code) {
             console.log('exit: ' + code);
 
-            setTimeout(set_msw_config, 10, msw_name, directory_name);
+            //setTimeout(set_msw_config, 10, msw_name, directory_name);
+            setTimeout(requireMsw, 1000, mission_name, directory_name);
         });
 
         gitPull.on('error', function(code) {
             console.log('error: ' + code);
 
-            setTimeout(npm_install, 10, msw_name, directory_name);
+            //setTimeout(npm_install, 10, msw_name, directory_name);
         });
     }
     catch (e) {
         console.log(e.message);
     }
 }
+/*
+var msw_config = {};
+function set_msw_config(msw_name, directory_name) {
+    try {
+        msw_config = JSON.parse(fs.readFileSync('./' + directory_name + '/config.json', 'utf8'));
 
-function npm_install(msw_name, directory_name) {
+        msw_config.name = msw_name;
+        msw_config.gcs = drone_info.gcs;
+        msw_config.drone = drone_info.drone;
+
+        fs.writeFileSync('./' + directory_name + '/config.json', JSON.stringify(msw_config, null, 4), 'utf8');
+        console.log('update ./' + directory_name + '/config.json');
+
+        setTimeout(npm_install, 10, msw_name, directory_name);
+    }
+    catch (e) {
+        msw_config.name = msw_name;
+        msw_config.gcs = drone_info.gcs;
+        msw_config.drone = drone_info.drone;
+        msw_config.serialPortNum = '/dev/ttyUSB3';
+        msw_config.serialBaudrate = '57600';
+        fs.writeFileSync('./' + directory_name + '/config.json', JSON.stringify(msw_config, null, 4), 'utf8');
+        console.log('create ./' + directory_name + '/config.json');
+
+        setTimeout(npm_install, 10, msw_name, directory_name);
+    }
+}
+*/
+
+function npm_install(mission_name, directory_name) {
     try {
         if (process.platform === 'win32') {
             var cmd = 'npm.cmd'
@@ -249,13 +243,13 @@ function npm_install(msw_name, directory_name) {
         npmInstall.on('exit', function(code) {
             console.log('exit: ' + code);
 
-            setTimeout(fork_msw, 10, msw_name, directory_name);
+            setTimeout(fork_msw, 10, mission_name, directory_name);
         });
 
         npmInstall.on('error', function(code) {
             console.log('error: ' + code);
 
-            setTimeout(npm_install, 10, msw_name, directory_name);
+            setTimeout(npm_install, 10, mission_name, directory_name);
         });
     }
     catch (e) {
@@ -263,28 +257,36 @@ function npm_install(msw_name, directory_name) {
     }
 }
 
-function fork_msw(msw_name, directory_name) {
-    var executable_name = directory_name.replace(msw_name + '_', '');
+function fork_msw(mission_name, directory_name) {
+    var executable_name = directory_name.replace(mission_name + '_', '');
 
-    var npmInstall = spawn('node', [executable_name], { cwd: process.cwd() + '/' + directory_name });
+    var nodeMsw = spawn('node', [executable_name], { cwd: process.cwd() + '/' + directory_name });
 
-    npmInstall.stdout.on('data', function(data) {
+    nodeMsw.stdout.on('data', function(data) {
         console.log('stdout: ' + data);
     });
 
-    npmInstall.stderr.on('data', function(data) {
+    nodeMsw.stderr.on('data', function(data) {
         console.log('stderr: ' + data);
     });
 
-    npmInstall.on('exit', function(code) {
+    nodeMsw.on('exit', function(code) {
         console.log('exit: ' + code);
     });
 
-    npmInstall.on('error', function(code) {
+    nodeMsw.on('error', function(code) {
         console.log('error: ' + code);
 
         setTimeout(npm_install, 10, directory_name);
     });
+}
+
+global.msw_directory = {};
+function requireMsw(mission_name, directory_name) {
+    var require_msw_name = directory_name.replace(mission_name + '_', '');
+    msw_directory[require_msw_name] = directory_name;
+
+    require('./' + directory_name + '/' + require_msw_name);
 }
 
 function ae_response_action(status, res_body, callback) {
@@ -428,7 +430,7 @@ function retrieve_my_cnt_name(callback) {
                                     info.name = container_name;
                                     conf.cnt.push(JSON.parse(JSON.stringify(info)));
 
-                                    msw_noti_topic.push(info.parent + '/' + info.name);
+                                    muv_sub_msw_topic.push(info.parent + '/' + info.name);
 
                                     info = {};
                                     info.parent = '/Mobius/' + drone_info.gcs + '/Mission_Data/' + drone_info.drone + '/' + mission_name + '/' + container_name;
@@ -472,7 +474,19 @@ function retrieve_my_cnt_name(callback) {
 
                         chk_cnt = 'git';
                         if(drone_info.mission[mission_name].hasOwnProperty(chk_cnt)) {
-                            git_clone(mission_name, drone_info.mission[mission_name][chk_cnt]);
+                            var repo_arr = drone_info.mission[mission_name][chk_cnt].split('/');
+                            var directory_name = mission_name + '_' + repo_arr[repo_arr.length-1].replace('.git', '');
+                            try {
+                                if(fs.existsSync('./' + directory_name)) {
+                                    setTimeout(git_pull, 10, mission_name, directory_name);
+                                }
+                                else {
+                                    setTimeout(git_clone, 10, mission_name, directory_name, drone_info.mission[mission_name][chk_cnt]);
+                                }
+                            }
+                            catch (e) {
+                                console.log(e.message);
+                            }
                         }
                     }
                 }
@@ -492,6 +506,10 @@ function retrieve_my_cnt_name(callback) {
                 my_drone_type = 'pixhawk';
             }
 
+            var drone_type = {};
+            drone_type.type = my_drone_type;
+            fs.writeFileSync('drone_type.json', JSON.stringify(drone_type, null, 4), 'utf8');
+
             if(drone_info.hasOwnProperty('secure')) {
                 my_secure = drone_info.secure;
             }
@@ -499,7 +517,17 @@ function retrieve_my_cnt_name(callback) {
                 my_secure = 'off';
             }
 
-            gcs_noti_topic = '/Mobius/' + my_gcs_name + '/GCS_Data/' + drone_info.drone;
+            if(drone_info.hasOwnProperty('system_id')) {
+                my_system_id = drone_info.system_id;
+            }
+            else{
+                my_system_id = 8;
+            }
+
+            muv_pub_fc_gpi_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone +'/global_position_int';
+            muv_pub_fc_hb_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone +'/heartbeat';
+
+            muv_sub_gcs_topic = '/Mobius/' + my_gcs_name + '/GCS_Data/' + drone_info.drone;
             MQTT_SUBSCRIPTION_ENABLE = 1;
             sh_state = 'crtct';
             setTimeout(http_watchdog, normal_interval);
@@ -649,7 +677,7 @@ function check_rtv_cnt() {
 // for notification
 //var xmlParser = bodyParser.text({ type: '*/*' });
 
-function mqtt_connect(serverip, gcs_noti_topic, noti_topic) {
+function mqtt_connect(serverip, sub_gcs_topic, noti_topic) {
     if(mqtt_client == null) {
         if (conf.usesecure === 'disable') {
             var connectOptions = {
@@ -687,50 +715,50 @@ function mqtt_connect(serverip, gcs_noti_topic, noti_topic) {
         }
 
         mqtt_client = mqtt.connect(connectOptions);
-    }
 
-    mqtt_client.on('connect', function () {
-        console.log('fc_mqtt is connected');
+        mqtt_client.on('connect', function () {
+            console.log('fc_mqtt is connected');
 
-        if(gcs_noti_topic != '') {
-            mqtt_client.subscribe(gcs_noti_topic, function () {
-                console.log('[mqtt_connect] gcs_noti_topic is subscribed: ' + gcs_noti_topic);
-            });
-        }
+            if(sub_gcs_topic != '') {
+                mqtt_client.subscribe(sub_gcs_topic, function () {
+                    console.log('[mqtt_connect] sub_gcs_topic is subscribed: ' + sub_gcs_topic);
+                });
+            }
 
-        if(noti_topic != '') {
-            mqtt_client.subscribe(noti_topic, function () {
-                console.log('[mqtt_connect] noti_topic is subscribed:  ' + noti_topic);
-            });
-        }
-    });
+            if(noti_topic != '') {
+                mqtt_client.subscribe(noti_topic, function () {
+                    console.log('[mqtt_connect] noti_topic is subscribed:  ' + noti_topic);
+                });
+            }
+        });
 
-    mqtt_client.on('message', function (topic, message) {
-        if(topic == gcs_noti_topic) {
-            tas_mav.gcs_noti_handler(message);
-        }
-        else {
-            if(topic.includes('/oneM2M/req/')) {
-                var jsonObj = JSON.parse(message.toString());
-
-                if (jsonObj['m2m:rqp'] == null) {
-                    jsonObj['m2m:rqp'] = jsonObj;
-                }
-
-                noti.mqtt_noti_action(topic.split('/'), jsonObj);
+        mqtt_client.on('message', function (topic, message) {
+            if(topic == sub_gcs_topic) {
+                tas_mav.gcs_noti_handler(message);
             }
             else {
-            }
-        }
-    });
+                if(topic.includes('/oneM2M/req/')) {
+                    var jsonObj = JSON.parse(message.toString());
 
-    mqtt_client.on('error', function (err) {
-        console.log(err.message);
-    });
+                    if (jsonObj['m2m:rqp'] == null) {
+                        jsonObj['m2m:rqp'] = jsonObj;
+                    }
+
+                    noti.mqtt_noti_action(topic.split('/'), jsonObj);
+                }
+                else {
+                }
+            }
+        });
+
+        mqtt_client.on('error', function (err) {
+            console.log(err.message);
+        });
+    }
 }
 
-function msw_mqtt_connect(broker_ip, port, noti_topic) {
-    if(msw_mqtt_client == null) {
+function muv_mqtt_connect(broker_ip, port, noti_topic) {
+    if(muv_mqtt_client == null) {
         if (conf.usesecure === 'disable') {
             var connectOptions = {
                 host: broker_ip,
@@ -766,30 +794,30 @@ function msw_mqtt_connect(broker_ip, port, noti_topic) {
             };
         }
 
-        msw_mqtt_client = mqtt.connect(connectOptions);
-    }
+        muv_mqtt_client = mqtt.connect(connectOptions);
 
-    msw_mqtt_client.on('connect', function () {
-        console.log('msw_mqtt connected to ' + broker_ip);
-        for(var idx in noti_topic) {
-            if(noti_topic.hasOwnProperty(idx)) {
-                msw_mqtt_client.subscribe(noti_topic[idx]);
-                console.log('[msw_mqtt_connect] noti_topic[' + idx + ']: ' + noti_topic[idx]);
+        muv_mqtt_client.on('connect', function () {
+            console.log('muv_mqtt connected to ' + broker_ip);
+            for(var idx in noti_topic) {
+                if(noti_topic.hasOwnProperty(idx)) {
+                    muv_mqtt_client.subscribe(noti_topic[idx]);
+                    console.log('[muv_mqtt_connect] noti_topic[' + idx + ']: ' + noti_topic[idx]);
+                }
             }
-        }
-    });
+        });
 
-    msw_mqtt_client.on('message', function (topic, message) {
-        var msg_obj = JSON.parse(message.toString());
+        muv_mqtt_client.on('message', function (topic, message) {
+            var msg_obj = JSON.parse(message.toString());
 
-        send_to_Mobius((topic + '/' + my_sortie_name), msg_obj, parseInt(Math.random() * 10));
+            send_to_Mobius((topic + '/' + my_sortie_name), msg_obj, parseInt(Math.random() * 10));
 
-        console.log(topic + ' - ' + JSON.stringify(msg_obj));
-    });
+            console.log(topic + ' - ' + JSON.stringify(msg_obj));
+        });
 
-    msw_mqtt_client.on('error', function (err) {
-        console.log(err.message);
-    });
+        muv_mqtt_client.on('error', function (err) {
+            console.log(err.message);
+        });
+    }
 }
 
 function send_to_Mobius(topic, content_each_obj, gap) {
@@ -811,6 +839,6 @@ function send_to_Mobius(topic, content_each_obj, gap) {
 //         fc.global_position_int.alt = parseInt(Math.random()*100);
 //
 //         var fc_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone +'/global_position_int';
-//         msw_mqtt_client.publish(fc_topic, JSON.stringify(fc.global_position_int));
+//         muv_mqtt_client.publish(fc_topic, JSON.stringify(fc.global_position_int));
 //     }
 // }, 1500);
