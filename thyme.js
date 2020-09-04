@@ -25,7 +25,7 @@ global.conf = require('./conf.js');
 //fs.writeFileSync('aei.json', JSON.stringify(conf, null, 4), 'utf-8');
 
 //global.sh_state = 'rtvae';
-global.sh_state = 'crtae';
+global.sh_state = 'rtvct';
 
 global.mqtt_client = null;
 global.muv_mqtt_client = null;

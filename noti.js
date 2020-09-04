@@ -122,16 +122,13 @@ exports.mqtt_noti_action = function(topic_arr, jsonObj) {
 
         _this.parse_sgn(rqi, pc, function (path_arr, cinObj, rqi) {
             if(cinObj) {
+                var resp_topic = '/oneM2M/resp/' + topic_arr[3] + '/' + topic_arr[4] + '/' + topic_arr[5];
+                _this.response_mqtt(resp_topic, 2001, '', conf.ae.id, rqi, '', topic_arr[5]);
+
                 if(cinObj.sud || cinObj.vrq) {
-                    var resp_topic = '/oneM2M/resp/' + topic_arr[3] + '/' + topic_arr[4] + '/' + topic_arr[5];
-                    _this.response_mqtt(resp_topic, 2001, '', conf.ae.id, rqi, '', topic_arr[5]);
                 }
                 else {
                     console.log('mqtt ' + bodytype + ' notification <----');
-
-                    resp_topic = '/oneM2M/resp/' + topic_arr[3] + '/' + topic_arr[4] + '/' + topic_arr[5];
-                    _this.response_mqtt(resp_topic, 2001, '', conf.ae.id, rqi, '', topic_arr[5]);
-
                     console.log('mqtt response - 2001 ---->');
 
                     muv_mqtt_client.publish(path_arr.join('/').replace('/'+path_arr[path_arr.length-1], ''), JSON.stringify(cinObj));

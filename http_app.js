@@ -384,6 +384,12 @@ function retrieve_my_cnt_name(callback) {
 
             my_gcs_name = drone_info.gcs;
 
+            if(drone_info.hasOwnProperty('host')) {
+                conf.cse.host = drone_info.host;
+            }
+
+            console.log("gcs host is " + conf.cse.host);
+
             var info = {};
             info.parent = '/Mobius/' + drone_info.gcs;
             info.name = 'Drone_Data';
@@ -529,7 +535,7 @@ function retrieve_my_cnt_name(callback) {
 
             muv_sub_gcs_topic = '/Mobius/' + my_gcs_name + '/GCS_Data/' + drone_info.drone;
             MQTT_SUBSCRIPTION_ENABLE = 1;
-            sh_state = 'crtct';
+            sh_state = 'crtae';
             setTimeout(http_watchdog, normal_interval);
             callback();
         }
@@ -542,7 +548,12 @@ function retrieve_my_cnt_name(callback) {
 }
 
 function http_watchdog() {
-    if (sh_state === 'crtae') {
+    if(sh_state === 'rtvct') {
+        retrieve_my_cnt_name(function () {
+
+        });
+    }
+    else if (sh_state === 'crtae') {
         console.log('[sh_state] : ' + sh_state);
         sh_adn.crtae(conf.ae.parent, conf.ae.name, conf.ae.appid, function (status, res_body) {
             console.log(res_body);
@@ -583,7 +594,7 @@ function http_watchdog() {
                     console.log('AE-ID created is ' + aeid + ' not equal to device AE-ID is ' + conf.ae.id);
                 }
                 else {
-                    sh_state = 'rtvct';
+                    sh_state = 'crtct';
                     request_count = 0;
                     return_count = 0;
 
@@ -594,11 +605,6 @@ function http_watchdog() {
                 console.log('x-m2m-rsc : ' + status + ' <----');
                 setTimeout(http_watchdog, retry_interval);
             }
-        });
-    }
-    else if(sh_state === 'rtvct') {
-        retrieve_my_cnt_name(function () {
-
         });
     }
     else if (sh_state === 'crtct') {
@@ -809,7 +815,7 @@ function muv_mqtt_connect(broker_ip, port, noti_topic) {
         muv_mqtt_client.on('message', function (topic, message) {
             var msg_obj = JSON.parse(message.toString());
 
-            send_to_Mobius((topic + '/' + my_sortie_name), msg_obj, parseInt(Math.random() * 10));
+            send_to_Mobius((topic), msg_obj, parseInt(Math.random() * 10));
 
             console.log(topic + ' - ' + JSON.stringify(msg_obj));
         });
