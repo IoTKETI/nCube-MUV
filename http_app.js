@@ -813,11 +813,17 @@ function muv_mqtt_connect(broker_ip, port, noti_topic) {
         });
 
         muv_mqtt_client.on('message', function (topic, message) {
-            var msg_obj = JSON.parse(message.toString());
-
-            send_to_Mobius((topic), msg_obj, parseInt(Math.random() * 10));
-
-            console.log(topic + ' - ' + JSON.stringify(msg_obj));
+            try {
+                var msg_obj = JSON.parse(message.toString());
+                send_to_Mobius((topic), msg_obj, parseInt(Math.random() * 10));
+                console.log(topic + ' - ' + JSON.stringify(msg_obj));
+            }
+            catch (e) {
+                msg_obj = {};
+                msg_obj.value = message.toString();
+                send_to_Mobius((topic), msg_obj, parseInt(Math.random() * 10));
+                console.log(topic + ' - ' + JSON.stringify(msg_obj));
+            }
         });
 
         muv_mqtt_client.on('error', function (err) {
