@@ -850,7 +850,7 @@ function muv_mqtt_connect(broker_ip, port, noti_topic) {
             catch (e) {
                 msg_obj = message.toString();
                 send_to_Mobius((topic), msg_obj, parseInt(Math.random() * 10));
-                console.log(topic + ' - ' + JSON.stringify(msg_obj));
+                console.log(topic + ' - ' + msg_obj);
             }
         });
 
