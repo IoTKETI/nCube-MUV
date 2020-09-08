@@ -131,7 +131,12 @@ exports.mqtt_noti_action = function(topic_arr, jsonObj) {
                     console.log('mqtt ' + bodytype + ' notification <----');
                     console.log('mqtt response - 2001 ---->');
 
-                    muv_mqtt_client.publish(path_arr.join('/').replace('/'+path_arr[path_arr.length-1], ''), JSON.stringify(cinObj.con));
+                    if(getType(cinObj.con) == 'string') {
+                        muv_mqtt_client.publish(path_arr.join('/').replace('/' + path_arr[path_arr.length - 1], ''), cinObj.con);
+                    }
+                    else {
+                        muv_mqtt_client.publish(path_arr.join('/').replace('/' + path_arr[path_arr.length - 1], ''), JSON.stringify(cinObj.con));
+                    }
                 }
             }
         });

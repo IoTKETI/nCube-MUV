@@ -73,6 +73,35 @@ var muv_sub_msw_topic = [];
 global.muv_pub_fc_gpi_topic = '';
 global.muv_pub_fc_hb_topic = '';
 
+global.getType = function (p) {
+    var type = 'string';
+    if (Array.isArray(p)) {
+        type = 'array';
+    }
+    else if (typeof p === 'string') {
+        try {
+            var _p = JSON.parse(p);
+            if(typeof _p === 'object') {
+                type = 'string_object';
+            }
+            else {
+                type = 'string';
+            }
+        } catch (e) {
+            type = 'string';
+            return type;
+        }
+    }
+    else if (p != null && typeof p === 'object') {
+        type = 'object';
+    }
+    else {
+        type = 'other';
+    }
+
+    return type;
+};
+
 // ready for mqtt
 for(var i = 0; i < conf.sub.length; i++) {
     if(conf.sub[i].name != null) {
