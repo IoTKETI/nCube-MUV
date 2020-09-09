@@ -400,7 +400,7 @@ function create_sub_all(count, callback) {
 }
 
 global.drone_info = {};
-
+global.mission_parent = [];
 function retrieve_my_cnt_name(callback) {
     sh_adn.rtvct('/Mobius/' + conf.ae.approval_gcs +'/approval/'+conf.ae.name+'/la', 0, function (rsc, res_body, count) {
         if(rsc == 2000) {
@@ -471,6 +471,7 @@ function retrieve_my_cnt_name(callback) {
                                     info.parent = '/Mobius/' + drone_info.gcs + '/Mission_Data/' + drone_info.drone + '/' + mission_name + '/' + container_name;
                                     info.name = my_sortie_name;
                                     conf.cnt.push(JSON.parse(JSON.stringify(info)));
+                                    mission_parent.push(info.parent);
                                 }
                             }
                         }

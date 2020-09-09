@@ -699,6 +699,12 @@ function parseMav(mavPacket) {
                 my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
                 sh_adn.crtct(my_parent_cnt_name+'?rcn=0', my_sortie_name, 0, function (rsc, res_body, count) {
                 });
+
+                for(var idx in mission_parent) {
+                    if(mission_parent.hasOwnProperty(idx)) {
+                        setTimeout(createMissionContainer, 50, idx);
+                    }
+                }
             }
         }
         else {
@@ -711,4 +717,8 @@ function parseMav(mavPacket) {
     }
 }
 
-
+function createMissionContainer(idx) {
+    var mission_parent_path = mission_parent[idx];
+    sh_adn.crtct(mission_parent_path+'?rcn=0', my_sortie_name, 0, function (rsc, res_body, count) {
+    });
+}
