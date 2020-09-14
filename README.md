@@ -18,11 +18,12 @@ $ cd /home/pi/nCube-MUV
 $ npm install
 ```
 
-* Autorun at boot in raspberry-pi
+* MQTT-broker
 ```
-$ sudo nano /etc/xdg/lxsession/LXDE-pi/autostart
-
-Add executable code to last line
-
-$ sh /home/pi/nCube-MUV/auto.sh > /home/pi/nCube-MUV/auto.sh.log 2>&1
+$ wget http://repo.mosquitto.org/debian/mosquitto-repo.gpg.key
+$ sudo apt-key add mosquitto-repo.gpg.key
+$ cd /etc/apt/sources.list.d/
+$ sudo wget http://repo.mosquitto.org/debian/mosquitto-buster.list 
+$ sudo apt-get update
+$ sudo apt-get install mosquitto
 ```
