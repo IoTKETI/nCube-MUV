@@ -459,7 +459,7 @@ function retrieve_my_cnt_name(callback) {
                         if(drone_info.mission[mission_name].hasOwnProperty(chk_cnt)) {
                             for (var idx in drone_info.mission[mission_name][chk_cnt]) {
                                 if (drone_info.mission[mission_name][chk_cnt].hasOwnProperty(idx)) {
-                                    var container_name = drone_info.mission[mission_name][chk_cnt][idx];
+                                    var container_name = drone_info.mission[mission_name][chk_cnt][idx].split(':')[0];
                                     info = {};
                                     info.parent = '/Mobius/' + drone_info.gcs + '/Mission_Data/' + drone_info.drone + '/' + mission_name;
                                     info.name = container_name;
@@ -472,6 +472,14 @@ function retrieve_my_cnt_name(callback) {
                                     info.name = my_sortie_name;
                                     conf.cnt.push(JSON.parse(JSON.stringify(info)));
                                     mission_parent.push(info.parent);
+
+                                    if(drone_info.mission[mission_name][chk_cnt][idx].split(':').length > 1) {
+                                        info = {};
+                                        info.parent = '/Mobius/' + drone_info.gcs + '/Mission_Data/' + drone_info.drone + '/' + mission_name + '/' + container_name;
+                                        info.name = 'sub_msw';
+                                        info.nu = 'mqtt://' + conf.cse.host + '/' + drone_info.mission[mission_name][chk_cnt][idx].split(':')[1]; + '?ct=json';
+                                        conf.sub.push(JSON.parse(JSON.stringify(info)));
+                                    }
                                 }
                             }
                         }
