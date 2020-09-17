@@ -511,50 +511,44 @@ try {
     fc = JSON.parse(fs.readFileSync('fc_data_model.json', 'utf8'));
 }
 catch (e) {
-    fc = "{\n" +
-        "                \"beartbeat\": {\n" +
-        "                    \"type\": 2,\n" +
-        "                        \"autopilot\": 3,\n" +
-        "                        \"base_mode\": 0,\n" +
-        "                        \"custom_mode\": 0,\n" +
-        "                        \"system_status\": 0,\n" +
-        "                        \"mavlink_version\": 1\n" +
-        "                },\n" +
-        "                \"attitude\": {\n" +
-        "                    \"time_boot_ms\": 123456789,\n" +
-        "                        \"roll\": 0.0,\n" +
-        "                        \"pitch\": 0.0,\n" +
-        "                        \"yaw\": 0.0,\n" +
-        "                        \"rollspeed\": 0.0,\n" +
-        "                        \"pitchspeed\": 0.0,\n" +
-        "                        \"yawspeed\": 0.0\n" +
-        "                },\n" +
-        "                \"global_position_int\": {\n" +
-        "                    \"time_boot_ms\": 123456789,\n" +
-        "                        \"lat\": 0,\n" +
-        "                        \"lon\": 0,\n" +
-        "                        \"alt\": 0,\n" +
-        "                        \"relative_alt\": 0,\n" +
-        "                        \"vx\": 0,\n" +
-        "                        \"vy\": 0,\n" +
-        "                        \"vz\": 0,\n" +
-        "                        \"hdg\": 65535\n" +
-        "                },\n" +
-        "                \"battery_status\": {\n" +
-        "                    \"id\": 0,\n" +
-        "                    \"battery_function\": 0,\n" +
-        "                    \"type\": 3,\n" +
-        "                    \"temperature\": 32767,\n" +
-        "                    \"voltages\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],\n" +
-        "                    \"current_battery\": -1,\n" +
-        "                    \"current_consumed\": -1,\n" +
-        "                    \"energy_consumed\": -1,\n" +
-        "                    \"battery_remaining\": -1,\n" +
-        "                    \"time_remaining\": 0,\n" +
-        "                    \"charge_state\": 0\n" +
-        "                    }\n" +
-        "                }\n" +
-        "            }";
+    fc.heartbeat = {};
+    fc.heartbeat.type = 2;
+    fc.heartbeat.autopilot = 3;
+    fc.heartbeat.base_mode = 0;
+    fc.heartbeat.custom_mode = 0;
+    fc.heartbeat.system_status = 0;
+    fc.heartbeat.mavlink_version = 1;
+
+    fc.attitude = {};
+    fc.attitude.time_boot_ms = 123456789;
+    fc.attitude.roll = 0.0;
+    fc.attitude.pitch = 0.0;
+    fc.attitude.yaw = 0.0;
+    fc.attitude.rollspeed = 0.0;
+    fc.attitude.pitchspeed = 0.0;
+    fc.attitude.yawspeed = 0.0;
+
+    fc.global_position_int = {};
+    fc.global_position_int.time_boot_ms = 123456789;
+    fc.global_position_int.lat = 0;
+    fc.global_position_int.lon = 0;
+    fc.global_position_int.alt = 0;
+    fc.global_position_int.vx = 0;
+    fc.global_position_int.vy = 0;
+    fc.global_position_int.vz = 0;
+    fc.global_position_int.hdg = 65535;
+
+    fc.battery_status = {};
+    fc.battery_status.id = 0;
+    fc.battery_status.battery_function = 0;
+    fc.battery_status.type = 3;
+    fc.battery_status.temperature = 32767;
+    fc.battery_status.voltages = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    fc.battery_status.current_battery = -1;
+    fc.battery_status.current_consumed = -1;
+    fc.battery_status.battery_remaining = -1;
+    fc.battery_status.time_remaining = 0;
+    fc.battery_status.charge_state = 0;
 
     fs.writeFileSync('fc_data_model.json', JSON.stringify(fc, null, 4), 'utf8');
 }

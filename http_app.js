@@ -689,7 +689,7 @@ function http_watchdog() {
 
                     ready_for_notification();
 
-                    // tas_mav.ready();
+                    tas_mav.ready();
                     // tas_sec.ready();
                     // tas_mission.ready();
 
