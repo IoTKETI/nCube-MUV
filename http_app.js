@@ -473,6 +473,8 @@ function retrieve_my_cnt_name(callback) {
                                     conf.cnt.push(JSON.parse(JSON.stringify(info)));
                                     mission_parent.push(info.parent);
 
+                                    muv_sub_msw_topic.push(info.parent + '/' + info.name);
+
                                     if(drone_info.mission[mission_name][chk_cnt][idx].split(':').length > 1) {
                                         info = {};
                                         info.parent = '/Mobius/' + drone_info.gcs + '/Mission_Data/' + drone_info.drone + '/' + mission_name + '/' + container_name;
