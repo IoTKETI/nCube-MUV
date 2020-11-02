@@ -465,7 +465,7 @@ function retrieve_my_cnt_name(callback) {
                                     info.name = container_name;
                                     conf.cnt.push(JSON.parse(JSON.stringify(info)));
 
-                                    muv_sub_msw_topic.push(info.parent + '/' + info.name);
+                                    // muv_sub_msw_topic.push(info.parent + '/' + info.name);
 
                                     info = {};
                                     info.parent = '/Mobius/' + drone_info.gcs + '/Mission_Data/' + drone_info.drone + '/' + mission_name + '/' + container_name;
