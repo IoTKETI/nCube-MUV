@@ -27,18 +27,18 @@ conf.useprotocol = 'http'; // select one for 'http' or 'mqtt' or 'coap' or 'ws'
 // build cse
 
 var approval_host = {}
-approval_host.ip = '203.253.128.161';
+approval_host.ip = '203.253.128.177';
 
 // var cse_host = {};
 // try {
 //     cse_host = JSON.parse(fs.readFileSync('cse_host.json', 'utf8'));
 // }
 // catch (e) {
-//     cse_host.ip = '203.253.128.161';
+//     cse_host.ip = '203.253.128.177';
 //     fs.writeFileSync('cse_host.json', JSON.stringify(cse_host, null, 4), 'utf8');
 // }
 
-// {"drone": "KETI_IYAHN", "gcs": "UTM_UVARC", "type": "pixhawk", "mission": "h2battery", "host":"203.253.128.161"}
+// {"drone": "KETI_IYAHN", "gcs": "UTM_UVARC", "type": "pixhawk", "mission": "h2battery", "host":"203.253.128.177"}
 
 cse.host        = approval_host.ip;
 cse.port        = '7579';

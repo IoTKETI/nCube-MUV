@@ -14,7 +14,7 @@ var USE_UDP = false;
 
 
 var PORT = 14550;
-var HOST = '203.253.128.161'; //'127.0.0.1';
+var HOST = '203.253.128.177'; //'127.0.0.1';
 
 var dgram = require('dgram');
 var client = dgram.createSocket('udp4');
