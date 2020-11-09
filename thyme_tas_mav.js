@@ -491,7 +491,7 @@ function mavPortData(data) {
 // var mavStr = [];
 // var mavStrPacket = '';
 //
-var pre_seq = 0;
+// var pre_seq = 0;
 // function mavPortData(data) {
 //     mavStr += data.toString('hex');
 //     if(data[0] == 0xfe || data[0] == 0xfd) {
@@ -608,6 +608,8 @@ catch (e) {
 
 var flag_base_mode = 0;
 
+var pre_seq = 0;
+
 function parseMav(mavPacket) {
     var ver = mavPacket.substr(0, 2);
     if (ver == 'fd') {
@@ -618,6 +620,9 @@ function parseMav(mavPacket) {
         sysid = mavPacket.substr(6, 2).toLowerCase();
         msgid = mavPacket.substr(10, 2).toLowerCase();
     }
+
+    var sys_id = parseInt(sysid, 16);
+    var msg_id = parseInt(msgid, 16);
 
     var cur_seq = parseInt(mavPacket.substr(4, 2), 16);
 
