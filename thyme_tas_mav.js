@@ -647,7 +647,7 @@ function parseMav(mavPacket) {
     //     console.log('255 - ' + content_each);
     // }
 
-    if (msgid == mavlink.MAVLINK_MSG_ID_GLOBAL_POSITION_INT) { // #33
+    if (msg_id == mavlink.MAVLINK_MSG_ID_GLOBAL_POSITION_INT) { // #33
         if (ver == 'fd') {
             var base_offset = 20;
             var time_boot_ms = mavPacket.substr(base_offset, 8).toLowerCase();
@@ -682,7 +682,7 @@ function parseMav(mavPacket) {
         muv_mqtt_client.publish(muv_pub_fc_gpi_topic, JSON.stringify(fc.global_position_int));
     }
 
-    else if (msgid == mavlink.MAVLINK_MSG_ID_COMMAND_LONG) { // #76 : COMMAND_LONG
+    else if (msg_id == mavlink.MAVLINK_MSG_ID_COMMAND_LONG) { // #76 : COMMAND_LONG
         // if(authResult == 'done') {
         //     if (secPort.isOpen) {
         //         len = parseInt(mavPacket.substr(2, 2), 16);
@@ -703,7 +703,7 @@ function parseMav(mavPacket) {
         // }
     }
 
-    else if (msgid == mavlink.MAVLINK_MSG_ID_HEARTBEAT) { // #00 : HEARTBEAT
+    else if (msg_id == mavlink.MAVLINK_MSG_ID_HEARTBEAT) { // #00 : HEARTBEAT
         if (ver == 'fd') {
             base_offset = 20;
             var custom_mode = mavPacket.substr(base_offset, 8).toLowerCase();
