@@ -491,7 +491,7 @@ function mavPortData(data) {
 // var mavStr = [];
 // var mavStrPacket = '';
 //
-// var pre_seq = 0;
+var pre_seq = 0;
 // function mavPortData(data) {
 //     mavStr += data.toString('hex');
 //     if(data[0] == 0xfe || data[0] == 0xfd) {
