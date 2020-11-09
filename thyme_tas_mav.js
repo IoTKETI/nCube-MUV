@@ -50,12 +50,12 @@ var _server = null;
 
 var socket_mav = null;
 var mavPort = null;
-var ltePort = null;
+// var ltePort = null;
 
 var mavPortNum = '/dev/ttyAMA0';
 var mavBaudrate = '57600';
-var ltePortNum = '/dev/ttyUSB1';
-var lteBaudrate = '115200';
+// var ltePortNum = '/dev/ttyUSB1';
+// var lteBaudrate = '115200';
 
 var ae_name = {};
 ae_name = JSON.parse(fs.readFileSync('flight.json', 'utf8'));
@@ -115,9 +115,9 @@ exports.ready = function tas_ready() {
 
     }
 
-    ltePortNum = '/dev/ttyUSB1';
-    lteBaudrate = '115200';
-    ltePortOpening();
+    // ltePortNum = '/dev/ttyUSB1';
+    // lteBaudrate = '115200';
+    // ltePortOpening();
 };
 
 // var spawn = require('child_process').spawn;
@@ -799,9 +799,9 @@ function parseMav(mavPacket) {
                 sh_adn.crtct(my_parent_cnt_name+'?rcn=0', my_sortie_name, 0, function (rsc, res_body, count) {
                 });
 
-                lte_mission_name = lte_parent_mission_name + '/' + my_sortie_name;
-                sh_adn.crtct(lte_parent_mission_name+'?rcn=0', my_sortie_name, 0, function (rsc, res_body, count) {
-                });
+                // lte_mission_name = lte_parent_mission_name + '/' + my_sortie_name;
+                // sh_adn.crtct(lte_parent_mission_name+'?rcn=0', my_sortie_name, 0, function (rsc, res_body, count) {
+                // });
             }
         }
         else {
@@ -811,7 +811,7 @@ function parseMav(mavPacket) {
             // sh_adn.crtct(my_parent_cnt_name+'?rcn=0', my_sortie_name, 0, function (rsc, res_body, count) {
             // });
 
-            lte_mission_name = lte_parent_mission_name + '/' + my_sortie_name;
+            // lte_mission_name = lte_parent_mission_name + '/' + my_sortie_name;
             // sh_adn.crtct(lte_parent_mission_name+'?rcn=0', my_sortie_name, 0, function (rsc, res_body, count) {
             // });
         }
@@ -820,137 +820,137 @@ function parseMav(mavPacket) {
     }
 }
 
-function ltePortOpening() {
-    if (ltePort == null) {
-        ltePort = new SerialPort(ltePortNum, {
-            baudRate: parseInt(lteBaudrate, 10)
-        });
-
-        ltePort.on('open', ltePortOpen);
-        ltePort.on('close', ltePortClose);
-        ltePort.on('error', ltePortError);
-        ltePort.on('data', ltePortData);
-    }
-    else {
-        if (ltePort.isOpen) {
-
-        }
-        else {
-            ltePort.open();
-        }
-    }
-}
-
-function ltePortOpen() {
-    console.log('ltePort open. ' + ltePortNum + ' Data rate: ' + lteBaudrate);
-    //displayMsg('LTE Port(' + ltePortNum + ') Open\n' + 'Data Rate: ' + lteBaudrate);
-
-    setInterval(lteReqGetRssi, 2000);
-}
-
-function ltePortClose() {
-    console.log('ltePort closed.');
-	// displayMsg('LTE Port Closed');
-    setTimeout(ltePortOpening, 2000);
-}
-
-function ltePortError(error) {
-    var error_str = error.toString();
-    console.log('[ltePort error]: ' + error.message);
-    // displayMsg('[ltePort error]: ' + error.message);
-    if (error_str.substring(0, 14) == "Error: Opening") {
-
-    }
-    else {
-        console.log('[ltePort error]: ' + error);
-    }
-
-    setTimeout(ltePortOpening, 2000);
-}
-
-function lteReqGetRssi() {
-    if(ltePort != null) {
-        if (ltePort.isOpen) {
-            //var message = Buffer.from('AT+CSQ\r');
-            var message = Buffer.from('AT@DBG\r');
-            ltePort.write(message);
-        }
-    }
-}
-
-var count = 0;
-var strRssi = '';
-
-function ltePortData(data) {
-    strRssi += data.toString();
-
-    //console.log(strRssi);
-
-    var arrRssi = strRssi.split('OK');
-
-    if(arrRssi.length >= 2) {
-        //console.log(arrRssi);
-
-        var strLteQ = arrRssi[0].replace(/ /g, '');
-        var arrLteQ = strLteQ.split(',');
-
-        for(var idx in arrLteQ) {
-            if(arrLteQ.hasOwnProperty(idx)) {
-                //console.log(arrLteQ[idx]);
-                var arrQValue = arrLteQ[idx].split(':');
-                if(arrQValue[0] == '@DBG') {
-                    gpi.GLOBAL_POSITION_INT.plmn = arrQValue[2];
-                }
-                else if(arrQValue[0] == 'Band') {
-                    gpi.GLOBAL_POSITION_INT.band = parseInt(arrQValue[1]);
-                }
-                else if(arrQValue[0] == 'EARFCN') {
-                    gpi.GLOBAL_POSITION_INT.earfcn = parseInt(arrQValue[1]);
-                }
-                else if(arrQValue[0] == 'Bandwidth') {
-                    gpi.GLOBAL_POSITION_INT.bandwidth = parseInt(arrQValue[1].replace('MHz', ''));
-                }
-                else if(arrQValue[0] == 'PCI') {
-                    gpi.GLOBAL_POSITION_INT.pci = parseInt(arrQValue[1]);
-                }
-                else if(arrQValue[0] == 'Cell-ID') {
-                    gpi.GLOBAL_POSITION_INT.cell_id = arrQValue[1];
-                }
-                else if(arrQValue[0] == 'GUTI') {
-                    gpi.GLOBAL_POSITION_INT.guti = arrQValue[1];
-                }
-                else if(arrQValue[0] == 'TAC') {
-                    gpi.GLOBAL_POSITION_INT.tac = parseInt(arrQValue[1]);
-                }
-                else if(arrQValue[0] == 'RSRP') {
-                    gpi.GLOBAL_POSITION_INT.rsrp = parseFloat(arrQValue[1].replace('dbm', ''));
-                }
-                else if(arrQValue[0] == 'RSRQ') {
-                    gpi.GLOBAL_POSITION_INT.rsrq = parseFloat(arrQValue[1].replace('dbm', ''));
-                }
-                else if(arrQValue[0] == 'RSSI') {
-                    gpi.GLOBAL_POSITION_INT.rssi = parseFloat(arrQValue[1].replace('dbm', ''));
-                }
-                else if(arrQValue[0] == 'SINR') {
-                    gpi.GLOBAL_POSITION_INT.sinr = parseFloat(arrQValue[1].replace('db', ''));
-                }
-            }
-        }
-
-        //console.log(gpi);
-
-        setTimeout(sendLteRssi, 0, gpi);
-
-        strRssi = '';
-    }
-}
-
-function sendLteRssi(gpi) {
-    var parent = lte_mission_name+'?rcn=0';
-    sh_adn.crtci(parent, 0, gpi, null, function () {
-
-    });
-}
+// function ltePortOpening() {
+//     if (ltePort == null) {
+//         ltePort = new SerialPort(ltePortNum, {
+//             baudRate: parseInt(lteBaudrate, 10)
+//         });
+//
+//         ltePort.on('open', ltePortOpen);
+//         ltePort.on('close', ltePortClose);
+//         ltePort.on('error', ltePortError);
+//         ltePort.on('data', ltePortData);
+//     }
+//     else {
+//         if (ltePort.isOpen) {
+//
+//         }
+//         else {
+//             ltePort.open();
+//         }
+//     }
+// }
+//
+// function ltePortOpen() {
+//     console.log('ltePort open. ' + ltePortNum + ' Data rate: ' + lteBaudrate);
+//     //displayMsg('LTE Port(' + ltePortNum + ') Open\n' + 'Data Rate: ' + lteBaudrate);
+//
+//     setInterval(lteReqGetRssi, 2000);
+// }
+//
+// function ltePortClose() {
+//     console.log('ltePort closed.');
+// 	// displayMsg('LTE Port Closed');
+//     setTimeout(ltePortOpening, 2000);
+// }
+//
+// function ltePortError(error) {
+//     var error_str = error.toString();
+//     console.log('[ltePort error]: ' + error.message);
+//     // displayMsg('[ltePort error]: ' + error.message);
+//     if (error_str.substring(0, 14) == "Error: Opening") {
+//
+//     }
+//     else {
+//         console.log('[ltePort error]: ' + error);
+//     }
+//
+//     setTimeout(ltePortOpening, 2000);
+// }
+//
+// function lteReqGetRssi() {
+//     if(ltePort != null) {
+//         if (ltePort.isOpen) {
+//             //var message = Buffer.from('AT+CSQ\r');
+//             var message = Buffer.from('AT@DBG\r');
+//             ltePort.write(message);
+//         }
+//     }
+// }
+//
+// var count = 0;
+// var strRssi = '';
+//
+// function ltePortData(data) {
+//     strRssi += data.toString();
+//
+//     //console.log(strRssi);
+//
+//     var arrRssi = strRssi.split('OK');
+//
+//     if(arrRssi.length >= 2) {
+//         //console.log(arrRssi);
+//
+//         var strLteQ = arrRssi[0].replace(/ /g, '');
+//         var arrLteQ = strLteQ.split(',');
+//
+//         for(var idx in arrLteQ) {
+//             if(arrLteQ.hasOwnProperty(idx)) {
+//                 //console.log(arrLteQ[idx]);
+//                 var arrQValue = arrLteQ[idx].split(':');
+//                 if(arrQValue[0] == '@DBG') {
+//                     gpi.GLOBAL_POSITION_INT.plmn = arrQValue[2];
+//                 }
+//                 else if(arrQValue[0] == 'Band') {
+//                     gpi.GLOBAL_POSITION_INT.band = parseInt(arrQValue[1]);
+//                 }
+//                 else if(arrQValue[0] == 'EARFCN') {
+//                     gpi.GLOBAL_POSITION_INT.earfcn = parseInt(arrQValue[1]);
+//                 }
+//                 else if(arrQValue[0] == 'Bandwidth') {
+//                     gpi.GLOBAL_POSITION_INT.bandwidth = parseInt(arrQValue[1].replace('MHz', ''));
+//                 }
+//                 else if(arrQValue[0] == 'PCI') {
+//                     gpi.GLOBAL_POSITION_INT.pci = parseInt(arrQValue[1]);
+//                 }
+//                 else if(arrQValue[0] == 'Cell-ID') {
+//                     gpi.GLOBAL_POSITION_INT.cell_id = arrQValue[1];
+//                 }
+//                 else if(arrQValue[0] == 'GUTI') {
+//                     gpi.GLOBAL_POSITION_INT.guti = arrQValue[1];
+//                 }
+//                 else if(arrQValue[0] == 'TAC') {
+//                     gpi.GLOBAL_POSITION_INT.tac = parseInt(arrQValue[1]);
+//                 }
+//                 else if(arrQValue[0] == 'RSRP') {
+//                     gpi.GLOBAL_POSITION_INT.rsrp = parseFloat(arrQValue[1].replace('dbm', ''));
+//                 }
+//                 else if(arrQValue[0] == 'RSRQ') {
+//                     gpi.GLOBAL_POSITION_INT.rsrq = parseFloat(arrQValue[1].replace('dbm', ''));
+//                 }
+//                 else if(arrQValue[0] == 'RSSI') {
+//                     gpi.GLOBAL_POSITION_INT.rssi = parseFloat(arrQValue[1].replace('dbm', ''));
+//                 }
+//                 else if(arrQValue[0] == 'SINR') {
+//                     gpi.GLOBAL_POSITION_INT.sinr = parseFloat(arrQValue[1].replace('db', ''));
+//                 }
+//             }
+//         }
+//
+//         //console.log(gpi);
+//
+//         setTimeout(sendLteRssi, 0, gpi);
+//
+//         strRssi = '';
+//     }
+// }
+//
+// function sendLteRssi(gpi) {
+//     var parent = lte_mission_name+'?rcn=0';
+//     sh_adn.crtci(parent, 0, gpi, null, function () {
+//
+//     });
+// }
 
 // function displayMsg(msg) {
 // 	// oled.clearDisplay();
