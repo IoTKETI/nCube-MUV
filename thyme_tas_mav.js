@@ -28,15 +28,19 @@ var i2c = require('i2c-bus'),
     oled = require('oled-i2c-bus');
 var font = require('oled-font-5x7');
 var sleep = require('system-sleep');
+
 const SIZE_X=128,
       SIZE_Y=32;
+
 var opts = {
   width: SIZE_X,
   height: SIZE_Y,
   address: 0x3c
 };
+
 try {
   var oled = new oled(i2cBus, opts);
+
   oled.clearDisplay();
   oled.turnOnDisplay();
 }
@@ -289,7 +293,7 @@ var params = {};
 
 function dji_handler(data) {
     socket_mav = this;
-    
+
     var data_arr = data.toString().split(',');
 
     dji.flightstatus = data_arr[0].replace('[', '');
@@ -527,7 +531,7 @@ function extractMav(fnParse) {
                 var mavPacket = mavStr.substr(0, mavLength);
                 mavStr = mavStr.substr(mavLength);
                 setTimeout(fnParse, 0, mavPacket);
-            } 
+            }
             else {
                 break;
             }
@@ -556,6 +560,9 @@ function mavPortData(data) {
 
             if (mavStr.length >= mavLength) {
                 var mavPacket = mavStr.substr(0, mavLength);
+                mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
+                send_aggr_to_Mobius(my_cnt_name, mavPacket, 1500);
+
                 mavStr = mavStr.substr(mavLength);
                 setTimeout(parseMav, 0, mavPacket);
             }
@@ -703,7 +710,7 @@ function parseMav(mavPacket) {
             base_offset += 8;
             relative_alt = mavPacket.substr(base_offset, 8).toLowerCase();
         }
-        
+
         gpi.GLOBAL_POSITION_INT.time_boot_ms = Buffer.from(time_boot_ms, 'hex').readUInt32LE(0);
         gpi.GLOBAL_POSITION_INT.lat = Buffer.from(lat, 'hex').readInt32LE(0);
         gpi.GLOBAL_POSITION_INT.lon = Buffer.from(lon, 'hex').readInt32LE(0);
@@ -790,7 +797,7 @@ function parseMav(mavPacket) {
         hb.HEARTBEAT.system_status = Buffer.from(system_status, 'hex').readUInt8(0);
         hb.HEARTBEAT.mavlink_version = Buffer.from(mavlink_version, 'hex').readUInt8(0);
 
-        if(hb.HEARTBEAT.base_mode & 0x80) { 
+        if(hb.HEARTBEAT.base_mode & 0x80) {
             if(flag_base_mode == 0) {
                 flag_base_mode = 1;
 
@@ -850,7 +857,7 @@ function parseMav(mavPacket) {
 //
 // function ltePortClose() {
 //     console.log('ltePort closed.');
-// 	// displayMsg('LTE Port Closed');
+//     // displayMsg('LTE Port Closed');
 //     setTimeout(ltePortOpening, 2000);
 // }
 //
