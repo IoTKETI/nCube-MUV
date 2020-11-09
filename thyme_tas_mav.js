@@ -28,19 +28,15 @@ var i2c = require('i2c-bus'),
     oled = require('oled-i2c-bus');
 var font = require('oled-font-5x7');
 var sleep = require('system-sleep');
-
 const SIZE_X=128,
       SIZE_Y=32;
-
 var opts = {
   width: SIZE_X,
   height: SIZE_Y,
   address: 0x3c
 };
-
 try {
   var oled = new oled(i2cBus, opts);
-
   oled.clearDisplay();
   oled.turnOnDisplay();
 }
@@ -545,8 +541,32 @@ function extractMav(fnParse) {
 var mavStr = '';
 function mavPortData(data) {
     mavStr += hex(data);
-    
-    extractMav(parseMav);
+
+    while(mavStr.length > 12) {
+        var stx = mavStr.substr(0, 2);
+        if(stx === 'fe') {
+            if (stx === 'fe') {
+                var len = parseInt(mavStr.substr(2, 2), 16);
+                var mavLength = (6 * 2) + (len * 2) + (2 * 2);
+            }
+            else { // if (stx === 'fd') {
+                len = parseInt(mavStr.substr(2, 2), 16);
+                mavLength = (10 * 2) + (len * 2) + (2 * 2);
+            }
+
+            if (mavStr.length >= mavLength) {
+                var mavPacket = mavStr.substr(0, mavLength);
+                mavStr = mavStr.substr(mavLength);
+                setTimeout(parseMav, 0, mavPacket);
+            }
+            else {
+                break;
+            }
+        }
+        else {
+            mavStr = mavStr.substr(2);
+        }
+    }
 }
 //
 // var pre_seq = 0;
