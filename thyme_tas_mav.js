@@ -489,6 +489,7 @@ function mavPortData(data) {
         }
         else {
             mavStrFromDrone = mavStrFromDrone.substr(2);
+            console.log(mavStrFromDrone);
         }
     }
 }
@@ -496,7 +497,6 @@ function mavPortData(data) {
 // var mavStr = [];
 // var mavStrPacket = '';
 //
-// var pre_seq = 0;
 // function mavPortData(data) {
 //     mavStr += data.toString('hex');
 //     if(data[0] == 0xfe || data[0] == 0xfd) {
@@ -612,9 +612,6 @@ catch (e) {
 }
 
 var flag_base_mode = 0;
-
-var pre_seq = 0;
-
 function parseMavFromDrone(mavPacket) {
     try {
         var ver = mavPacket.substr(0, 2);
@@ -631,27 +628,6 @@ function parseMavFromDrone(mavPacket) {
         var msg_id = parseInt(msgid, 16);
 
         var cur_seq = parseInt(mavPacket.substr(4, 2), 16);
-
-        if (pre_seq == cur_seq) {
-            //console.log('        ' + pre_seq + ' - ' + cur_seq + ' - ' + mavPacket);
-        }
-        else {
-            //console.log('        ' + pre_seq + ' - ' + cur_seq + ' - ' + mavPacket;
-        }
-        pre_seq = (cur_seq + 1) % 256;
-
-        // if(sysid == '37' ) {
-        //     console.log('55 - ' + content_each);
-        // }
-        // else if(sysid == '0a' ) {
-        //     console.log('10 - ' + content_each);
-        // }
-        // else if(sysid == '21' ) {
-        //     console.log('33 - ' + content_each);
-        // }
-        // else if(sysid == 'ff' ) {
-        //     console.log('255 - ' + content_each);
-        // }
 
         if (msg_id == mavlink.MAVLINK_MSG_ID_GLOBAL_POSITION_INT) { // #33
             if (ver == 'fd') {
