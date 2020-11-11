@@ -454,36 +454,40 @@ function hex(arrayBuffer)
     return hexOctets.join("");
 }
 
-var mavStr = '';
-function mavPortData(data) {
-    mavStr += hex(data);
+var mavStrFromDrone = '';
+var mavStrFromDroneLength = 0;
 
-    while(mavStr.length > 12) {
-        var stx = mavStr.substr(0, 2);
+function mavPortData(data) {
+    if(mavStrFromDroneLength > 0) {
+        mavStrFromDrone = mavStrFromDrone.substr(mavStrFromDroneLength);
+        mavStrFromDroneLength = 0;
+    }
+
+    mavStrFromDrone += hex(msg);
+    while(mavStrFromDrone.length > 12) {
+        var stx = mavStrFromDrone.substr(0, 2);
         if(stx === 'fe') {
             if (stx === 'fe') {
-                var len = parseInt(mavStr.substr(2, 2), 16);
+                var len = parseInt(mavStrFromDrone.substr(2, 2), 16);
                 var mavLength = (6 * 2) + (len * 2) + (2 * 2);
             }
             else { // if (stx === 'fd') {
-                len = parseInt(mavStr.substr(2, 2), 16);
+                len = parseInt(mavStrFromDrone.substr(2, 2), 16);
                 mavLength = (10 * 2) + (len * 2) + (2 * 2);
             }
 
-            if (mavStr.length >= mavLength) {
-                var mavPacket = mavStr.substr(0, mavLength);
-                mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
-                send_aggr_to_Mobius(my_cnt_name, mavPacket, 1500);
-
-                mavStr = mavStr.substr(mavLength);
-                setTimeout(parseMav, 0, mavPacket);
+            if ((mavStrFromDrone.length - mavStrFromDroneLength) >= mavLength) {
+                mavStrFromDroneLength += mavLength;
+                var mavPacket = mavStrFromDrone.substr(0, mavLength);
+                // mavStrFromGcs = mavStrFromGcs.substr(mavLength);
+                setTimeout(parseMavFromDrone, 0, mavPacket);
             }
             else {
                 break;
             }
         }
         else {
-            mavStr = mavStr.substr(2);
+            mavStrFromDrone = mavStrFromDrone.substr(2);
         }
     }
 }
@@ -610,7 +614,7 @@ var flag_base_mode = 0;
 
 var pre_seq = 0;
 
-function parseMav(mavPacket) {
+function parseMavFromDrone(mavPacket) {
     var ver = mavPacket.substr(0, 2);
     if (ver == 'fd') {
         var sysid = mavPacket.substr(10, 2).toLowerCase();
