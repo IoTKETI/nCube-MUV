@@ -489,7 +489,7 @@ function mavPortData(data) {
         }
         else {
             mavStrFromDrone = mavStrFromDrone.substr(2);
-            console.log(mavStrFromDrone);
+            //console.log(mavStrFromDrone);
         }
     }
 }
