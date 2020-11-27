@@ -165,14 +165,6 @@ function secPortData(data) {
     }
 }
 
-var gpi = {};
-gpi.GLOBAL_POSITION_INT = {};
-
-var hb = {};
-hb.HEARTBEAT = {};
-
-var flag_base_mode = 0;
-
 function triggerSec() {
     if(secPort != null) {
         if (secPort.isOpen) {

@@ -726,9 +726,8 @@ function parseMavFromDrone(mavPacket) {
             muv_mqtt_client.publish(muv_pub_fc_hb_topic, JSON.stringify(fc.heartbeat));
 
             if (fc.heartbeat.base_mode & 0x80) {
-                if (flag_base_mode == 0) {
-                    flag_base_mode = 1;
-
+                if(flag_base_mode == 2) {
+                    flag_base_mode++;
                     my_sortie_name = moment().format('YYYY_MM_DD_T_HH_mm');
                     my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
                     sh_adn.crtct(my_parent_cnt_name + '?rcn=0', my_sortie_name, 0, function (rsc, res_body, count) {
@@ -736,8 +735,14 @@ function parseMavFromDrone(mavPacket) {
 
                     for (var idx in mission_parent) {
                         if (mission_parent.hasOwnProperty(idx)) {
-                            setTimeout(createMissionContainer, 50, idx);
+                            setTimeout(createMissionContainer, 10, idx);
                         }
+                    }
+                }
+                else {
+                    flag_base_mode++;
+                    if(flag_base_mode > 16) {
+                        flag_base_mode = 16;
                     }
                 }
             }
