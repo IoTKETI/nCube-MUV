@@ -612,6 +612,7 @@ catch (e) {
 }
 
 var flag_base_mode = 0;
+var start_arm_time = 0;
 function parseMavFromDrone(mavPacket) {
     try {
         var ver = mavPacket.substr(0, 2);
@@ -727,6 +728,7 @@ function parseMavFromDrone(mavPacket) {
 
             if (fc.heartbeat.base_mode & 0x80) {
                 if(flag_base_mode == 3) {
+                    start_arm_time = moment();
                     flag_base_mode++;
                     my_sortie_name = moment().format('YYYY_MM_DD_T_HH_mm');
                     my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
@@ -767,8 +769,9 @@ var arming_time = 0;
 var flight_time = {};
 function calculateFlightTime() {
     if (cal_count == 0) {
-        end_arm_time = moment().format('YYYY_MM_DD_T_HH_mm');
-        arming_time = end_arm_time - my_sortie_name;
+        end_arm_time = moment();
+        arming_time = end_arm_time.diff(start_arm_time, 'minute');
+        console.log('\r\n arming time: ', + arming_time + '\r\n');
         sh_adn.rtvct('/Mobius/Life_Prediction/History/' + conf.ae.name + '/la', 0, function (rsc, res_body, count) {
             if (rsc == 2000) {
                 flight_time = res_body[Object.keys(res_body)[0]].con;
@@ -777,8 +780,13 @@ function calculateFlightTime() {
                 console.log('x-m2m-rsc : ' + rsc + ' <----' + res_body);
             }
         });
-
-        flight_time.total_flight_time += end_arm_time;
+        
+        if (flight_time.total_flight_time == 0){
+            flight_time.total_flight_time = arming_time;
+        }
+        else {
+            flight_time.total_flight_time += arming_time;
+        }
         flight_time.arming_time = arming_time;
         flight_time.sortie_name = my_sortie_name;
 
