@@ -727,7 +727,6 @@ function parseMavFromDrone(mavPacket) {
 
             if (fc.heartbeat.base_mode & 0x80) {
                 if(flag_base_mode == 3) {
-                    cal_flag = 1;
                     flag_base_mode++;
                     my_sortie_name = moment().format('YYYY_MM_DD_T_HH_mm');
                     my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
@@ -773,6 +772,7 @@ function calculateFlightTime() {
         sh_adn.rtvct('/Mobius/Life_Prediction/History/' + conf.ae.name + '/la', 0, function (rsc, res_body, count) {
             if (rsc == 2000) {
                 flight_time = res_body[Object.keys(res_body)[0]].con;
+                console.log('History Last Data: ', flight_time);
             } else {
                 console.log('x-m2m-rsc : ' + rsc + ' <----' + res_body);
             }
