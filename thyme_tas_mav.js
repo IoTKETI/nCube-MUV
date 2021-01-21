@@ -19,7 +19,6 @@ var moment = require('moment');
 var fs = require('fs');
 
 var mavlink = require('./mavlibrary/mavlink.js');
-var http_watchdog_f = require('./http_app.js');
 
 var _server = null;
 
@@ -613,9 +612,6 @@ catch (e) {
 }
 
 var flag_base_mode = 0;
-var end_arm_time = 0;
-var arming_time = 0;
-var flight_time = {};
 function parseMavFromDrone(mavPacket) {
     try {
         var ver = mavPacket.substr(0, 2);
@@ -731,6 +727,7 @@ function parseMavFromDrone(mavPacket) {
 
             if (fc.heartbeat.base_mode & 0x80) {
                 if(flag_base_mode == 3) {
+                    cal_flag = 1;
                     flag_base_mode++;
                     my_sortie_name = moment().format('YYYY_MM_DD_T_HH_mm');
                     my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
@@ -752,28 +749,7 @@ function parseMavFromDrone(mavPacket) {
             }
             else {
                 flag_base_mode = 0;
-                end_arm_time = moment().format('YYYY_MM_DD_T_HH_mm');
-                arming_time = end_arm_time - my_sortie_name;
-                sh_adn.rtvct('/Mobius/Life_Prediction/History/'+conf.ae.name+'/la', 0, function (rsc, res_body, count) {
-                    if(rsc == 2000) {
-                        flight_time = res_body[Object.keys(res_body)[0]].con;
-                    }
-                    else {
-                        console.log('x-m2m-rsc : ' + rsc + ' <----' + res_body);
-                        setTimeout(http_watchdog, retry_interval);
-                        callback();
-                    }
-                });
-
-                flight_time.total_flight_time += end_arm_time;
-                flight_time.arming_time = arming_time;
-                flight_time.sortie_name = my_sortie_name;
-
-                sh_adn.crtct('/Mobius/Life_Prediction/History/?rcn=0', conf.ae.name, 0, function (rsc, res_body, count) {
-                });
-                sh_adn.crtci('/Mobius/Life_Prediction/History/' + conf.ae.name + '?rcn=0', 0, flight_time, null, function () {
-                });
-
+                calculateFlightTime();
                 my_sortie_name = 'disarm';
                 my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
             }
@@ -783,6 +759,34 @@ function parseMavFromDrone(mavPacket) {
     }
     catch (e) {
         console.log(e.message);
+    }
+}
+
+var cal_count = 0;
+var end_arm_time = 0;
+var arming_time = 0;
+var flight_time = {};
+function calculateFlightTime() {
+    if (cal_count == 0) {
+        end_arm_time = moment().format('YYYY_MM_DD_T_HH_mm');
+        arming_time = end_arm_time - my_sortie_name;
+        sh_adn.rtvct('/Mobius/Life_Prediction/History/' + conf.ae.name + '/la', 0, function (rsc, res_body, count) {
+            if (rsc == 2000) {
+                flight_time = res_body[Object.keys(res_body)[0]].con;
+            } else {
+                console.log('x-m2m-rsc : ' + rsc + ' <----' + res_body);
+            }
+        });
+
+        flight_time.total_flight_time += end_arm_time;
+        flight_time.arming_time = arming_time;
+        flight_time.sortie_name = my_sortie_name;
+
+        sh_adn.crtct('/Mobius/Life_Prediction/History' + '?rcn=0', conf.ae.name, 0, function (rsc, res_body, count) {
+        });
+        sh_adn.crtci('/Mobius/Life_Prediction/History/' + conf.ae.name + '?rcn=0', 0, flight_time, null, function () {
+        });
+        cal_count += 1;
     }
 }
 
