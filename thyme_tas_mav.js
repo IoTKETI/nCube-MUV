@@ -19,6 +19,7 @@ var moment = require('moment');
 var fs = require('fs');
 
 var mavlink = require('./mavlibrary/mavlink.js');
+var http_watchdog_f = require('./http_app.js');
 
 var _server = null;
 
