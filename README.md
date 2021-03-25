@@ -1,9 +1,9 @@
 # nCube-MUV
 Start Guide
 
-* Install dependencies
+### Install dependencies
 ```
-$ curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+$ curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
 
 $ sudo apt-get install -y nodejs
 
@@ -18,7 +18,7 @@ $ cd /home/pi/nCube-MUV
 $ npm install
 ```
 
-* MQTT-broker
+### Install MQTT-broker
 ```
 $ wget http://repo.mosquitto.org/debian/mosquitto-repo.gpg.key
 $ sudo apt-key add mosquitto-repo.gpg.key
