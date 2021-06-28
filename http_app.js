@@ -341,14 +341,14 @@ function requireMsw(mission_name, directory_name) {
     if (require_msw_name == 'msw_webrtc') {
         var webrtc_conf = {};
         try {
-            webrtc_conf = JSON.parse(fs.readFileSync(directory_name + '/webrtc_conf.json', 'utf8'));
+            webrtc_conf = JSON.parse(fs.readFileSync('webrtc_conf.json', 'utf8'));
         }
         catch (e) {
             webrtc_conf.directory_name = directory_name;
             webrtc_conf.host = drone_info.host;
             webrtc_conf.display_name = drone_info.drone;
             webrtc_conf.thismav_sysid = my_system_id;
-            fs.writeFileSync(directory_name + '/webrtc_conf.json', JSON.stringify(webrtc_conf, null, 4), 'utf8');
+            fs.writeFileSync('webrtc_conf.json', JSON.stringify(webrtc_conf, null, 4), 'utf8');
         }
         // pm2 start msw_webrtc_msw_webrtc/msw_webrtc
         setTimeout(run_webrtc, 10, mission_name, directory_name);
