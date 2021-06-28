@@ -310,11 +310,49 @@ function fork_msw(mission_name, directory_name) {
     });
 }
 
+function run_webrtc(mission_name, directory_name) {
+    var executable_name = directory_name.replace(mission_name + '_', '');
+
+    var nodeMsw = spawn('sh' + executable_name, { cwd: process.cwd() + '/' + directory_name });
+
+    nodeMsw.stdout.on('data', function(data) {
+        console.log('stdout: ' + data);
+    });
+
+    nodeMsw.stderr.on('data', function(data) {
+        console.log('stderr: ' + data);
+    });
+
+    nodeMsw.on('exit', function(code) {
+        console.log('exit: ' + code);
+    });
+
+    nodeMsw.on('error', function(code) {
+        console.log('error: ' + code);
+
+        setTimeout(npm_install, 10, directory_name);
+    });
+}
+
 global.msw_directory = {};
 function requireMsw(mission_name, directory_name) {
     var require_msw_name = directory_name.replace(mission_name + '_', '');
     msw_directory[require_msw_name] = directory_name;
+    if (require_msw_name == 'msw_webrtc') {
+        var webrtc_conf = {};
+        try {
+            webrtc_conf = JSON.parse(fs.readFileSync(directory_name + '/webrtc_conf.json', 'utf8'));
+        }
+        catch (e) {
+            webrtc_conf.host = drone_info.host;
+            webrtc_conf.display_name = drone_info.drone;
+            webrtc_conf.thismav_sysid = my_system_id;
+            fs.writeFileSync(directory_name + '/webrtc_conf.json', JSON.stringify(webrtc_conf, null, 4), 'utf8');
+        }
+        // pm2 start msw_webrtc_msw_webrtc/msw_webrtc
+        setTimeout(run_webrtc, 10, mission_name, directory_name);
 
+    }
     require('./' + directory_name + '/' + require_msw_name);
 }
 
