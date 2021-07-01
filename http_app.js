@@ -323,7 +323,7 @@ function run_webrtc(mission_name, directory_name) {
         webrtc_conf.directory_name = directory_name;
         webrtc_conf.host = drone_info.host;
         webrtc_conf.display_name = drone_info.drone.replace('_','');
-        webrtc_conf.thismav_sysid = 1234;
+        webrtc_conf.thismav_sysid = my_system_id;
         fs.writeFileSync('webrtc_conf.json', JSON.stringify(ae_name, null, 4), 'utf8');
     }
 
