@@ -327,7 +327,7 @@ function run_webrtc(mission_name, directory_name) {
         fs.writeFileSync('./' + directory_name + '/webrtc_conf.json', JSON.stringify(webrtc_conf, null, 4), 'utf8');
     }
 
-    var nodeMsw = spawn('sh' + executable_name, { cwd: process.cwd() + '/' + directory_name });
+    var nodeMsw = exec('sh ' + executable_name + '.sh', { cwd: process.cwd() + '/' + directory_name });
 
     nodeMsw.stdout.on('data', function(data) {
         console.log('stdout: ' + data);
