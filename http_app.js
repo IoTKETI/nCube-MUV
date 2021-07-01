@@ -354,7 +354,9 @@ function requireMsw(mission_name, directory_name) {
         setTimeout(run_webrtc, 10, mission_name, directory_name);
 
     }
-    require('./' + directory_name + '/' + require_msw_name);
+    else {
+        require('./' + directory_name + '/' + require_msw_name);
+    }
 }
 
 function ae_response_action(status, res_body, callback) {
@@ -802,17 +804,17 @@ function mqtt_connect(serverip, sub_gcs_topic, noti_topic) {
         mqtt_client = mqtt.connect(connectOptions);
 
         mqtt_client.on('connect', function () {
-            console.log('fc_mqtt is connected');
+            console.log('nCube_fc_mqtt is connected');
 
             if(sub_gcs_topic != '') {
                 mqtt_client.subscribe(sub_gcs_topic, function () {
-                    console.log('[mqtt_connect] sub_gcs_topic is subscribed: ' + sub_gcs_topic);
+                    console.log('[nCube_mqtt_connect] sub_gcs_topic is subscribed: ' + sub_gcs_topic);
                 });
             }
 
             if(noti_topic != '') {
                 mqtt_client.subscribe(noti_topic, function () {
-                    console.log('[mqtt_connect] noti_topic is subscribed:  ' + noti_topic);
+                    console.log('[nCube_mqtt_connect] noti_topic is subscribed:  ' + noti_topic);
                 });
             }
         });
@@ -882,11 +884,11 @@ function muv_mqtt_connect(broker_ip, port, noti_topic) {
         muv_mqtt_client = mqtt.connect(connectOptions);
 
         muv_mqtt_client.on('connect', function () {
-            console.log('muv_mqtt connected to ' + broker_ip);
+            console.log('nCube_muv_mqtt connected to ' + broker_ip);
             for(var idx in noti_topic) {
                 if(noti_topic.hasOwnProperty(idx)) {
                     muv_mqtt_client.subscribe(noti_topic[idx]);
-                    console.log('[muv_mqtt_connect] noti_topic[' + idx + ']: ' + noti_topic[idx]);
+                    console.log('[nCube_muv_mqtt_connect] noti_topic[' + idx + ']: ' + noti_topic[idx]);
                 }
             }
         });
