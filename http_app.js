@@ -324,7 +324,7 @@ function run_webrtc(mission_name, directory_name) {
         webrtc_conf.host = drone_info.host;
         webrtc_conf.display_name = drone_info.drone.replace('_','');
         webrtc_conf.thismav_sysid = my_system_id;
-        fs.writeFileSync('webrtc_conf.json', JSON.stringify(webrtc_conf, null, 4), 'utf8');
+        fs.writeFileSync('./' + directory_name + '/webrtc_conf.json', JSON.stringify(webrtc_conf, null, 4), 'utf8');
     }
 
     var nodeMsw = spawn('sh' + executable_name, { cwd: process.cwd() + '/' + directory_name });
