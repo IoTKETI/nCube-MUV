@@ -804,17 +804,17 @@ function mqtt_connect(serverip, sub_gcs_topic, noti_topic) {
         mqtt_client = mqtt.connect(connectOptions);
 
         mqtt_client.on('connect', function () {
-            console.log('nCube_fc_mqtt is connected');
+            console.log('fc_mqtt is connected');
 
             if(sub_gcs_topic != '') {
                 mqtt_client.subscribe(sub_gcs_topic, function () {
-                    console.log('[nCube_mqtt_connect] sub_gcs_topic is subscribed: ' + sub_gcs_topic);
+                    console.log('[mqtt_connect] sub_gcs_topic is subscribed: ' + sub_gcs_topic);
                 });
             }
 
             if(noti_topic != '') {
                 mqtt_client.subscribe(noti_topic, function () {
-                    console.log('[nCube_mqtt_connect] noti_topic is subscribed:  ' + noti_topic);
+                    console.log('[mqtt_connect] noti_topic is subscribed:  ' + noti_topic);
                 });
             }
         });
@@ -884,11 +884,11 @@ function muv_mqtt_connect(broker_ip, port, noti_topic) {
         muv_mqtt_client = mqtt.connect(connectOptions);
 
         muv_mqtt_client.on('connect', function () {
-            console.log('nCube_muv_mqtt connected to ' + broker_ip);
+            console.log('muv_mqtt connected to ' + broker_ip);
             for(var idx in noti_topic) {
                 if(noti_topic.hasOwnProperty(idx)) {
                     muv_mqtt_client.subscribe(noti_topic[idx]);
-                    console.log('[nCube_muv_mqtt_connect] noti_topic[' + idx + ']: ' + noti_topic[idx]);
+                    console.log('[muv_mqtt_connect] noti_topic[' + idx + ']: ' + noti_topic[idx]);
                 }
             }
         });
