@@ -313,6 +313,20 @@ function fork_msw(mission_name, directory_name) {
 function run_webrtc(mission_name, directory_name) {
     var executable_name = directory_name.replace(mission_name + '_', '');
 
+    var webrtc_conf = {};
+    try {
+        webrtc_conf = JSON.parse(fs.readFileSync('./' + directory_name + '/webrtc_conf.json', 'utf8'));
+    }
+    catch (e) {
+        webrtc_conf.gcs = drone_info.gcs;
+        webrtc_conf.drone = drone_info.drone;
+        webrtc_conf.directory_name = directory_name;
+        webrtc_conf.host = drone_info.host;
+        webrtc_conf.display_name = drone_info.drone.replace('_','');
+        webrtc_conf.thismav_sysid = 1234;
+        fs.writeFileSync('webrtc_conf.json', JSON.stringify(ae_name, null, 4), 'utf8');
+    }
+
     var nodeMsw = spawn('sh' + executable_name, { cwd: process.cwd() + '/' + directory_name });
 
     nodeMsw.stdout.on('data', function(data) {
