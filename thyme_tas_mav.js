@@ -467,14 +467,17 @@ function mavPortData(data) {
     while(mavStrFromDrone.length > 12) {
         var stx = mavStrFromDrone.substr(0, 2);
         if(stx === 'fe') {
-            if (stx === 'fe') {
-                var len = parseInt(mavStrFromDrone.substr(2, 2), 16);
-                var mavLength = (6 * 2) + (len * 2) + (2 * 2);
-            }
-            else { // if (stx === 'fd') {
-                len = parseInt(mavStrFromDrone.substr(2, 2), 16);
-                mavLength = (10 * 2) + (len * 2) + (2 * 2);
-            }
+            // if (stx === 'fe') {
+            //     var len = parseInt(mavStrFromDrone.substr(2, 2), 16);
+            //     var mavLength = (6 * 2) + (len * 2) + (2 * 2);
+            // }
+            // else { // if (stx === 'fd') {
+            //     len = parseInt(mavStrFromDrone.substr(2, 2), 16);
+            //     mavLength = (10 * 2) + (len * 2) + (2 * 2);
+            // }
+
+            var len = parseInt(mavStrFromDrone.substr(2, 2), 16);
+            var mavLength = (6 * 2) + (len * 2) + (2 * 2);
 
             if ((mavStrFromDrone.length - mavStrFromDroneLength) >= mavLength) {
                 mavStrFromDroneLength += mavLength;
@@ -727,7 +730,7 @@ function parseMavFromDrone(mavPacket) {
             fc.heartbeat.mavlink_version = Buffer.from(mavlink_version, 'hex').readUInt8(0);
 
             muv_mqtt_client.publish(muv_pub_fc_hb_topic, JSON.stringify(fc.heartbeat));
-            
+
             if (fc.heartbeat.base_mode & 0x80) {
                 if(flag_base_mode == 3) {
                     start_arm_time = moment();
@@ -737,8 +740,8 @@ function parseMavFromDrone(mavPacket) {
                     sh_adn.crtct(my_parent_cnt_name + '?rcn=0', my_sortie_name, 0, function (rsc, res_body, count) {
                     });
                     cal_flag = 1;
-                    cal_sortiename = my_sortie_name; 
-                    
+                    cal_sortiename = my_sortie_name;
+
                     for (var idx in mission_parent) {
                         if (mission_parent.hasOwnProperty(idx)) {
                             setTimeout(createMissionContainer, 10, idx);
@@ -793,11 +796,11 @@ function calculateFlightTime(cal_sortiename) {
 
             sh_adn.crtci('/Mobius/Life_Prediction/History/' + conf.ae.name + '?rcn=0', 0, flight_time, null, function () {
             });
-    
+
         } else {
             sh_adn.crtct('/Mobius/Life_Prediction/History' + '?rcn=0', conf.ae.name, 0, function (rsc, res_body, count) {
             });
-            
+
             flight_time.total_flight_time = arming_time;
             flight_time.arming_time = arming_time;
             flight_time.sortie_name = sortie_name;
