@@ -458,11 +458,6 @@ var mavStrFromDrone = '';
 var mavStrFromDroneLength = 0;
 
 function mavPortData(data) {
-    if(mavStrFromDroneLength > 0) {
-        mavStrFromDrone = mavStrFromDrone.substr(mavStrFromDroneLength);
-        mavStrFromDroneLength = 0;
-    }
-
     mavStrFromDrone += hex(data);
     while(mavStrFromDrone.length > 12) {
         var stx = mavStrFromDrone.substr(0, 2);
@@ -479,12 +474,16 @@ function mavPortData(data) {
             var len = parseInt(mavStrFromDrone.substr(2, 2), 16);
             var mavLength = (6 * 2) + (len * 2) + (2 * 2);
 
-            if ((mavStrFromDrone.length - mavStrFromDroneLength) >= mavLength) {
-                mavStrFromDroneLength += mavLength;
+            if ((mavStrFromDrone.length) >= mavLength) {
                 var mavPacket = mavStrFromDrone.substr(0, mavLength);
                 mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
                 send_aggr_to_Mobius(my_cnt_name, mavPacket, 1500);
                 setTimeout(parseMavFromDrone, 0, mavPacket);
+
+                //if(mavStrFromDroneLength > 0) {
+                    mavStrFromDrone = mavStrFromDrone.substr(mavLength);
+                    mavStrFromDroneLength = 0;
+                //}
             }
             else {
                 break;
