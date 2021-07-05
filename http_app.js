@@ -358,6 +358,8 @@ function requireMsw(mission_name, directory_name) {
             webrtc_conf = JSON.parse(fs.readFileSync('webrtc_conf.json', 'utf8'));
         }
         catch (e) {
+            webrtc_conf.gcs = drone_info.gcs;
+            webrtc_conf.drone = drone_info.drone;
             webrtc_conf.directory_name = directory_name;
             webrtc_conf.host = drone_info.host;
             webrtc_conf.display_name = drone_info.drone;
