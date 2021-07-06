@@ -18,6 +18,35 @@ var ip = require('ip');
 var moment = require('moment');
 var fs = require('fs');
 
+// I2C
+var bus = 3;
+var i2c = require('i2c-bus'),
+    i2cBus = i2c.openSync(bus),
+    oled = require('oled-i2c-bus');
+var font = require('oled-font-5x7');
+var sleep = require('system-sleep');
+
+const SIZE_X=128,
+      SIZE_Y=32;
+
+var opts = {
+  width: SIZE_X,
+  height: SIZE_Y,
+  address: 0x3c
+};
+
+try {
+  var oled = new oled(i2cBus, opts);
+
+  oled.clearDisplay();
+  oled.turnOnDisplay();
+}
+catch(err) {
+  // Print an error message and terminate the application
+  console.log(err.message);
+  process.exit(1);
+}
+
 var mavlink = require('./mavlibrary/mavlink.js');
 
 var _server = null;
@@ -29,6 +58,9 @@ var mavPortNum = '/dev/ttyAMA0';
 var mavBaudrate = '57600';
 
 exports.ready = function tas_ready() {
+    oled.setCursor(0,10);
+    oled.writeString(font, 1, 'Start nCube', 1, false);
+
     if(my_drone_type === 'dji') {
         if (_server == null) {
             _server = net.createServer(function (socket) {
@@ -476,6 +508,8 @@ function mavPortData(data) {
 
             if ((mavStrFromDrone.length) >= mavLength) {
                 var mavPacket = mavStrFromDrone.substr(0, mavLength);
+                oled.setCursor(0,10);
+                oled.writeString(font, 1, mavPacket, 1, false);
                 mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
                 send_aggr_to_Mobius(my_cnt_name, mavPacket, 1500);
                 setTimeout(parseMavFromDrone, 0, mavPacket);
