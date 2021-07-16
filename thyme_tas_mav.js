@@ -739,10 +739,8 @@ function parseMavFromDrone(mavPacket) {
             //console.log(hb);
         } else if (msg_id == mavlink.MAVLINK_MSG_ID_SYSTEM_TIME) { // #02 : SYSTEM_TIME
             muv_mqtt_client.publish(muv_pub_fc_system_time_topic, mavPacket);
-            console.log('SYSTEM_TIME - ', mavPacket);
         } else if (msg_id == mavlink.MAVLINK_MSG_ID_TIMESYNC) { // #111 : TIMESYNC
             muv_mqtt_client.publish(muv_pub_fc_timesync_topic, mavPacket);
-            console.log('TIMESYNC - ', mavPacket);
         }
     } catch (e) {
         console.log(e.message);
