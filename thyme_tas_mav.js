@@ -23,7 +23,7 @@ var mavlink = require('./mavlibrary/mavlink.js');
 var _server = null;
 
 var socket_mav = null;
-var mavPort = null;
+global.mavPort = null;
 
 var mavPortNum = '/dev/ttyAMA0';
 var mavBaudrate = '57600';
