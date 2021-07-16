@@ -737,10 +737,12 @@ function parseMavFromDrone(mavPacket) {
                 my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
             }
             //console.log(hb);
-        } else if (msg_id == mavlink.MAVLINK_MSG_ID_SYSTEM_TIME) { // #02 : HEARTBEAT
+        } else if (msg_id == mavlink.MAVLINK_MSG_ID_SYSTEM_TIME) { // #02 : SYSTEM_TIME
             muv_mqtt_client.publish(muv_pub_fc_system_time_topic, mavPacket);
-        } else if (msg_id == mavlink.MAVLINK_MSG_ID_TIMESYNC) { // #111 : HEARTBEAT
+            console.log('SYSTEM_TIME - ', mavPacket);
+        } else if (msg_id == mavlink.MAVLINK_MSG_ID_TIMESYNC) { // #111 : TIMESYNC
             muv_mqtt_client.publish(muv_pub_fc_timesync_topic, mavPacket);
+            console.log('TIMESYNC - ', mavPacket);
         }
     } catch (e) {
         console.log(e.message);
