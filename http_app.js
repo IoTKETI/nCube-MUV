@@ -72,6 +72,8 @@ var muv_sub_msw_topic = [];
 
 global.muv_pub_fc_gpi_topic = '';
 global.muv_pub_fc_hb_topic = '';
+global.muv_pub_fc_system_time_topic = '';
+global.muv_pub_fc_timesync_topic = '';
 
 global.getType = function (p) {
     var type = 'string';
@@ -629,7 +631,8 @@ function retrieve_my_cnt_name(callback) {
 
             muv_pub_fc_gpi_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone +'/global_position_int';
             muv_pub_fc_hb_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone +'/heartbeat';
-
+            muv_pub_fc_system_time_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone +'/system_time';
+            muv_pub_fc_timesync_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone +'/timesync';
             muv_sub_gcs_topic = '/Mobius/' + my_gcs_name + '/GCS_Data/' + drone_info.drone;
             MQTT_SUBSCRIPTION_ENABLE = 1;
             sh_state = 'crtae';
