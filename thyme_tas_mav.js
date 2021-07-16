@@ -57,44 +57,13 @@ exports.ready = function tas_ready() {
             });
         }
     } else if (my_drone_type === 'pixhawk') {
-        mavPortNum = '/dev/ttyAMA0';
+        mavPortNum = 'COM6';
         mavBaudrate = '57600';
         mavPortOpening();
     } else {
 
     }
 };
-
-
-// var spawn = require('child_process').spawn;
-// var djiosdk = null;
-//
-// function dji_sdk_launch() {
-//     djiosdk = spawn('./djiosdk-Mobius', ['UserConfig.txt']);
-//
-//     djiosdk.stdout.on('data', function(data) {
-//         console.log('stdout: ' + data);
-//     });
-//
-//     djiosdk.stderr.on('data', function(data) {
-//         console.log('stderr: ' + data);
-//
-//         //setTimeout(dji_sdk_launch, 1500);
-//     });
-//
-//     djiosdk.on('exit', function(code) {
-//         console.log('exit: ' + code);
-//
-//         setTimeout(dji_sdk_launch, 1000);
-//     });
-//
-//     djiosdk.on('error', function(code) {
-//         console.log('error: ' + code);
-//
-//         //setTimeout(dji_sdk_launch, 1000);
-//     });
-// }
-
 
 var aggr_content = {};
 
@@ -476,77 +445,6 @@ function mavPortData(data) {
         }
     }
 }
-
-//
-// var mavStr = [];
-// var mavStrPacket = '';
-//
-// function mavPortData(data) {
-//     mavStr += data.toString('hex');
-//     if(data[0] == 0xfe || data[0] == 0xfd) {
-//         var mavStrArr = [];
-//
-//         var str = '';
-//         var split_idx = 0;
-//
-//         mavStrArr[split_idx] = str;
-//         for (var i = 0; i < mavStr.length; i+=2) {
-//             str = mavStr.substr(i, 2);
-//
-//             if(mav_ver == 1) {
-//                 if (str == 'fe') {
-//                     mavStrArr[++split_idx] = '';
-//                 }
-//             }
-//             else if(mav_ver == 2) {
-//                 if (str == 'fd') {
-//                     mavStrArr[++split_idx] = '';
-//                 }
-//             }
-//
-//             mavStrArr[split_idx] += str;
-//         }
-//         mavStrArr.splice(0, 1);
-//
-//         var mavPacket = '';
-//         for (var idx in mavStrArr) {
-//             if(mavStrArr.hasOwnProperty(idx)) {
-//                 mavPacket = mavStrPacket + mavStrArr[idx];
-//
-//                 if(mav_ver == 1) {
-//                     var refLen = (parseInt(mavPacket.substr(2, 2), 16) + 8) * 2;
-//                 }
-//                 else if(mav_ver == 2) {
-//                     refLen = (parseInt(mavPacket.substr(2, 2), 16) + 12) * 2;
-//                 }
-//
-//                 if(refLen == mavPacket.length) {
-//                     mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
-//                     send_aggr_to_Mobius(my_cnt_name, mavPacket, 1500);
-//                     mavStrPacket = '';
-//
-//                     setTimeout(parseMav, 0, mavPacket);
-//                 }
-//                 else if(refLen < mavPacket.length) {
-//                     mavStrPacket = '';
-//                     //console.log('                        ' + mavStrArr[idx]);
-//                 }
-//                 else {
-//                     mavStrPacket = mavPacket;
-//                     //console.log('                ' + mavStrPacket.length + ' - ' + mavStrPacket);
-//                 }
-//             }
-//         }
-//
-//         if(mavStrPacket != '') {
-//             mavStr = mavStrPacket;
-//             mavStrPacket = '';
-//         }
-//         else {
-//             mavStr = '';
-//         }
-//     }
-// }
 
 var fc = {};
 try {
