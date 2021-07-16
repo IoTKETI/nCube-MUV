@@ -29,7 +29,7 @@ var mavPortNum = '/dev/ttyAMA0';
 var mavBaudrate = '57600';
 
 exports.ready = function tas_ready() {
-    if(my_drone_type === 'dji') {
+    if (my_drone_type === 'dji') {
         if (_server == null) {
             _server = net.createServer(function (socket) {
                 console.log('socket connected');
@@ -56,13 +56,11 @@ exports.ready = function tas_ready() {
                 // setTimeout(dji_sdk_launch, 1500);
             });
         }
-    }
-    else if(my_drone_type === 'pixhawk') {
+    } else if (my_drone_type === 'pixhawk') {
         mavPortNum = '/dev/ttyAMA0';
         mavBaudrate = '57600';
         mavPortOpening();
-    }
-    else {
+    } else {
 
     }
 };
@@ -101,17 +99,16 @@ exports.ready = function tas_ready() {
 var aggr_content = {};
 
 function send_aggr_to_Mobius(topic, content_each, gap) {
-    if(aggr_content.hasOwnProperty(topic)) {
+    if (aggr_content.hasOwnProperty(topic)) {
         var timestamp = moment().format('YYYY-MM-DDTHH:mm:ssSSS');
         aggr_content[topic][timestamp] = content_each;
-    }
-    else {
+    } else {
         aggr_content[topic] = {};
         timestamp = moment().format('YYYY-MM-DDTHH:mm:ssSSS');
         aggr_content[topic][timestamp] = content_each;
 
         setTimeout(function () {
-            sh_adn.crtci(topic+'?rcn=0', 0, aggr_content[topic], null, function () {
+            sh_adn.crtci(topic + '?rcn=0', 0, aggr_content[topic], null, function () {
 
             });
 
@@ -126,11 +123,11 @@ function mavlinkGenerateMessage(sysId, type, params) {
         var mavMsg = null;
         var genMsg = null;
         //var targetSysId = sysId;
-        var targetCompId = (params.targetCompId == undefined)?
-            0:
+        var targetCompId = (params.targetCompId == undefined) ?
+            0 :
             params.targetCompId;
 
-        switch( type ) {
+        switch (type) {
             // MESSAGE ////////////////////////////////////
             case mavlink.MAVLINK_MSG_ID_PING:
                 mavMsg = new mavlink.messages.ping(params.time_usec, params.seq, params.target_system, params.target_component);
@@ -196,9 +193,8 @@ function mavlinkGenerateMessage(sysId, type, params) {
                     params.errors_count4);
                 break;
         }
-    }
-    catch( e ) {
-        console.log( 'MAVLINK EX:' + e );
+    } catch (e) {
+        console.log('MAVLINK EX:' + e);
     }
 
     if (mavMsg) {
@@ -214,17 +210,15 @@ function sendDroneMessage(type, params) {
         var msg = mavlinkGenerateMessage(my_system_id, type, params);
         if (msg == null) {
             console.log("mavlink message is null");
-        }
-        else {
+        } else {
             // console.log('msg: ', msg);
             // console.log('msg_seq : ', msg.slice(2,3));
             //mqtt_client.publish(my_cnt_name, msg.toString('hex'));
             //_this.send_aggr_to_Mobius(my_cnt_name, msg.toString('hex'), 1500);
             mavPortData(msg);
         }
-    }
-    catch( ex ) {
-        console.log( '[ERROR] ' + ex );
+    } catch (ex) {
+        console.log('[ERROR] ' + ex);
     }
 }
 
@@ -268,10 +262,9 @@ function dji_handler(data) {
     params.type = 2;
     params.autopilot = 3;
 
-    if(dji.flightstatus == '0') {
+    if (dji.flightstatus == '0') {
         params.base_mode = 81;
-    }
-    else {
+    } else {
         params.base_mode = (81 | 0x80);
     }
 
@@ -343,46 +336,41 @@ exports.noti = function (path_arr, cinObj, socket) {
 
     if (cin.con == '') {
         console.log('---- is not cin message');
-    }
-    else {
+    } else {
         socket.write(JSON.stringify(cin));
     }
 };
 
 exports.gcs_noti_handler = function (message) {
-    if(my_drone_type === 'dji') {
+    if (my_drone_type === 'dji') {
         var com_msg = message.toString();
         var com_message = com_msg.split(":");
         var msg_command = com_message[0];
 
         if (msg_command == 't' || msg_command == 'h' || msg_command == 'l') {
             socket_mav.write(message);
-        }
-        else if (msg_command == 'g') {
-            if(com_message.length < 5) {
-                for(var i = 0; i < (5-com_message.length); i++) {
+        } else if (msg_command == 'g') {
+            if (com_message.length < 5) {
+                for (var i = 0; i < (5 - com_message.length); i++) {
                     com_msg += ':0';
                 }
                 message = Buffer.from(com_msg);
             }
             socket_mav.write(message);
 
-            var msg_lat = com_message[1].substring(0,7);
-            var msg_lon = com_message[2].substring(0,7);
-            var msg_alt = com_message[3].substring(0,3);
-        }
-        else if (msg_command == 'm'|| msg_command == 'a') {
+            var msg_lat = com_message[1].substring(0, 7);
+            var msg_lon = com_message[2].substring(0, 7);
+            var msg_alt = com_message[3].substring(0, 3);
+        } else if (msg_command == 'm' || msg_command == 'a') {
             socket_mav.write(message);
         }
-    }
-    else if(my_drone_type === 'pixhawk') {
+    } else if (my_drone_type === 'pixhawk') {
         if (mavPort != null) {
             if (mavPort.isOpen) {
                 mavPort.write(message);
             }
         }
-    }
-    else {
+    } else {
 
     }
 };
@@ -399,12 +387,10 @@ function mavPortOpening() {
         mavPort.on('close', mavPortClose);
         mavPort.on('error', mavPortError);
         mavPort.on('data', mavPortData);
-    }
-    else {
+    } else {
         if (mavPort.isOpen) {
 
-        }
-        else {
+        } else {
             mavPort.open();
         }
     }
@@ -425,8 +411,7 @@ function mavPortError(error) {
     console.log('[mavPort error]: ' + error.message);
     if (error_str.substring(0, 14) == "Error: Opening") {
 
-    }
-    else {
+    } else {
         console.log('mavPort error : ' + error);
     }
 
@@ -437,14 +422,12 @@ global.mav_ver = 1;
 
 const byteToHex = [];
 
-for (let n = 0; n <= 0xff; ++n)
-{
+for (let n = 0; n <= 0xff; ++n) {
     const hexOctet = n.toString(16).padStart(2, "0");
     byteToHex.push(hexOctet);
 }
 
-function hex(arrayBuffer)
-{
+function hex(arrayBuffer) {
     const buff = new Uint8Array(arrayBuffer);
     const hexOctets = []; // new Array(buff.length) is even faster (preallocates necessary array size), then use hexOctets[i] instead of .push()
 
@@ -459,9 +442,9 @@ var mavStrFromDroneLength = 0;
 
 function mavPortData(data) {
     mavStrFromDrone += hex(data);
-    while(mavStrFromDrone.length > 12) {
+    while (mavStrFromDrone.length > 12) {
         var stx = mavStrFromDrone.substr(0, 2);
-        if(stx === 'fe') {
+        if (stx === 'fe') {
             // if (stx === 'fe') {
             //     var len = parseInt(mavStrFromDrone.substr(2, 2), 16);
             //     var mavLength = (6 * 2) + (len * 2) + (2 * 2);
@@ -481,20 +464,19 @@ function mavPortData(data) {
                 setTimeout(parseMavFromDrone, 0, mavPacket);
 
                 //if(mavStrFromDroneLength > 0) {
-                    mavStrFromDrone = mavStrFromDrone.substr(mavLength);
-                    mavStrFromDroneLength = 0;
+                mavStrFromDrone = mavStrFromDrone.substr(mavLength);
+                mavStrFromDroneLength = 0;
                 //}
-            }
-            else {
+            } else {
                 break;
             }
-        }
-        else {
+        } else {
             mavStrFromDrone = mavStrFromDrone.substr(2);
             //console.log(mavStrFromDrone);
         }
     }
 }
+
 //
 // var mavStr = [];
 // var mavStrPacket = '';
@@ -569,8 +551,7 @@ function mavPortData(data) {
 var fc = {};
 try {
     fc = JSON.parse(fs.readFileSync('fc_data_model.json', 'utf8'));
-}
-catch (e) {
+} catch (e) {
     fc.heartbeat = {};
     fc.heartbeat.type = 2;
     fc.heartbeat.autopilot = 3;
@@ -617,14 +598,14 @@ var flag_base_mode = 0;
 var start_arm_time = 0;
 var cal_flag = 0;
 var cal_sortiename = '';
+
 function parseMavFromDrone(mavPacket) {
     try {
         var ver = mavPacket.substr(0, 2);
         if (ver == 'fd') {
             var sysid = mavPacket.substr(10, 2).toLowerCase();
             var msgid = mavPacket.substr(14, 6).toLowerCase();
-        }
-        else {
+        } else {
             sysid = mavPacket.substr(6, 2).toLowerCase();
             msgid = mavPacket.substr(10, 2).toLowerCase();
         }
@@ -646,8 +627,7 @@ function parseMavFromDrone(mavPacket) {
                 var alt = mavPacket.substr(base_offset, 8).toLowerCase();
                 base_offset += 8;
                 var relative_alt = mavPacket.substr(base_offset, 8).toLowerCase();
-            }
-            else {
+            } else {
                 base_offset = 12;
                 time_boot_ms = mavPacket.substr(base_offset, 8).toLowerCase();
                 base_offset += 8;
@@ -667,9 +647,7 @@ function parseMavFromDrone(mavPacket) {
             fc.global_position_int.relative_alt = Buffer.from(relative_alt, 'hex').readInt32LE(0);
 
             muv_mqtt_client.publish(muv_pub_fc_gpi_topic, JSON.stringify(fc.global_position_int));
-        }
-
-        else if (msg_id == mavlink.MAVLINK_MSG_ID_COMMAND_LONG) { // #76 : COMMAND_LONG
+        } else if (msg_id == mavlink.MAVLINK_MSG_ID_COMMAND_LONG) { // #76 : COMMAND_LONG
             // if(authResult == 'done') {
             //     if (secPort.isOpen) {
             //         len = parseInt(mavPacket.substr(2, 2), 16);
@@ -688,9 +666,7 @@ function parseMavFromDrone(mavPacket) {
             //         secPort.write(message);
             //     }
             // }
-        }
-
-        else if (msg_id == mavlink.MAVLINK_MSG_ID_HEARTBEAT) { // #00 : HEARTBEAT
+        } else if (msg_id == mavlink.MAVLINK_MSG_ID_HEARTBEAT) { // #00 : HEARTBEAT
             if (ver == 'fd') {
                 base_offset = 20;
                 var custom_mode = mavPacket.substr(base_offset, 8).toLowerCase();
@@ -704,8 +680,7 @@ function parseMavFromDrone(mavPacket) {
                 var system_status = mavPacket.substr(base_offset, 2).toLowerCase();
                 base_offset += 2;
                 var mavlink_version = mavPacket.substr(base_offset, 2).toLowerCase();
-            }
-            else {
+            } else {
                 base_offset = 12;
                 custom_mode = mavPacket.substr(base_offset, 8).toLowerCase();
                 base_offset += 8;
@@ -731,7 +706,7 @@ function parseMavFromDrone(mavPacket) {
             muv_mqtt_client.publish(muv_pub_fc_hb_topic, JSON.stringify(fc.heartbeat));
 
             if (fc.heartbeat.base_mode & 0x80) {
-                if(flag_base_mode == 3) {
+                if (flag_base_mode == 3) {
                     start_arm_time = moment();
                     flag_base_mode++;
                     my_sortie_name = moment().format('YYYY_MM_DD_T_HH_mm');
@@ -746,28 +721,28 @@ function parseMavFromDrone(mavPacket) {
                             setTimeout(createMissionContainer, 10, idx);
                         }
                     }
-                }
-                else {
+                } else {
                     flag_base_mode++;
-                    if(flag_base_mode > 16) {
+                    if (flag_base_mode > 16) {
                         flag_base_mode = 16;
                     }
                 }
-            }
-            else {
+            } else {
                 flag_base_mode = 0;
-                if (cal_flag == 1){
+                if (cal_flag == 1) {
                     cal_flag = 0;
                     calculateFlightTime(cal_sortiename);
                 }
                 my_sortie_name = 'disarm';
                 my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
             }
-
             //console.log(hb);
+        } else if (msg_id == mavlink.MAVLINK_MSG_ID_SYSTEM_TIME) { // #02 : HEARTBEAT
+            console.log("SYSTEM_TIME - ", mavPacket);
+        } else if (msg_id == mavlink.MAVLINK_MSG_ID_TIMESYNC) { // #111 : HEARTBEAT
+            console.log("TIMESYNC - ", mavPacket);
         }
-    }
-    catch (e) {
+    } catch (e) {
         console.log(e.message);
     }
 }
@@ -783,10 +758,9 @@ function calculateFlightTime(cal_sortiename) {
     sh_adn.rtvct('/Mobius/Life_Prediction/History/' + conf.ae.name + '/la', 0, function (rsc, res_body, count) {
         if (rsc == 2000) {
             flight_time = res_body[Object.keys(res_body)[0]].con;
-            if (flight_time.total_flight_time == 0){
+            if (flight_time.total_flight_time == 0) {
                 flight_time.total_flight_time = arming_time;
-            }
-            else {
+            } else {
                 flight_time.total_flight_time += arming_time;
             }
             flight_time.arming_time = arming_time;
@@ -815,6 +789,6 @@ function calculateFlightTime(cal_sortiename) {
 
 function createMissionContainer(idx) {
     var mission_parent_path = mission_parent[idx];
-    sh_adn.crtct(mission_parent_path+'?rcn=0', my_sortie_name, 0, function (rsc, res_body, count) {
+    sh_adn.crtct(mission_parent_path + '?rcn=0', my_sortie_name, 0, function (rsc, res_body, count) {
     });
 }
