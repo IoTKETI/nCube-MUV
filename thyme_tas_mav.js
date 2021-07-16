@@ -738,11 +738,9 @@ function parseMavFromDrone(mavPacket) {
             }
             //console.log(hb);
         } else if (msg_id == mavlink.MAVLINK_MSG_ID_SYSTEM_TIME) { // #02 : HEARTBEAT
-            console.log("SYSTEM_TIME - ", mavPacket);
-            muv_mqtt_client.publish(muv_pub_fc_system_time_topic, Buffer.from(mavPacket, 'hex'));
+            muv_mqtt_client.publish(muv_pub_fc_system_time_topic, mavPacket);
         } else if (msg_id == mavlink.MAVLINK_MSG_ID_TIMESYNC) { // #111 : HEARTBEAT
-            console.log("TIMESYNC - ", mavPacket);
-            muv_mqtt_client.publish(muv_pub_fc_timesync_topic, Buffer.from(mavPacket, 'hex'));
+            muv_mqtt_client.publish(muv_pub_fc_timesync_topic, mavPacket);
         }
     } catch (e) {
         console.log(e.message);
