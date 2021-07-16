@@ -54,7 +54,7 @@ try {
 }
 catch (e) {
     ae_name.approval_gcs = 'MUV';
-    ae_name.flight = 'Dione';
+    ae_name.flight = 'Earth';
     fs.writeFileSync('flight.json', JSON.stringify(ae_name, null, 4), 'utf8');
 }
 
