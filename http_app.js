@@ -526,8 +526,7 @@ function retrieve_my_cnt_name(callback) {
                                         info = {};
                                         info.parent = '/Mobius/' + drone_info.gcs + '/Mission_Data/' + drone_info.drone + '/' + mission_name + '/' + container_name;
                                         info.name = 'sub_msw';
-                                        info.nu = 'mqtt://' + conf.cse.host + '/' + drone_info.mission[mission_name][chk_cnt][idx].split(':')[1];
-                                        +'?ct=json';
+                                        info.nu = 'mqtt://' + conf.cse.host + '/' + drone_info.mission[mission_name][chk_cnt][idx].split(':')[1] +'?ct=json';
                                         conf.sub.push(JSON.parse(JSON.stringify(info)));
                                     }
                                 }
@@ -554,7 +553,7 @@ function retrieve_my_cnt_name(callback) {
                                         my_rc_name = drone_info.rc;
                                         if (mission_name === 'msw_lte_rc') {
                                             sub_rc_topic = '/Mobius/' + drone_info.gcs + '/RC_Data/' + my_rc_name + '/command';
-                                            pub_rc_topic = '/Mobius/' + drone_info.gcs + '/Mission_Data/' + drone_info.drone + '/' + mission_name + '/REMOTE';
+                                            pub_rc_topic = '/Mobius/' + drone_info.gcs + '/Mission_Data/' + drone_info.drone + '/' + mission_name + '/STATUS';
                                         }
                                     }
                                 }
