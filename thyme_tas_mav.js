@@ -515,6 +515,9 @@ let rc3_min = {};
 let rc4_max = {};
 let rc4_trim = {};
 let rc4_min = {};
+let rc5_max = {};
+let rc5_trim = {};
+let rc5_min = {};
 global.rc_map = {};
 
 function parseMavFromDrone(mavPacket) {
@@ -806,6 +809,36 @@ function parseMavFromDrone(mavPacket) {
                 rc4_trim[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
                 rc4_trim[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
                 rc4_trim[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC5_MIN')) {
+                //console.log(param_id);
+                if (!rc5_min.hasOwnProperty(sys_id)) {
+                    rc5_min[sys_id] = {};
+                }
+
+                rc5_min[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc5_min[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc5_min[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc5_min[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC5_MAX')) {
+                //console.log(param_id);
+                if (!rc5_max.hasOwnProperty(sys_id)) {
+                    rc5_max[sys_id] = {};
+                }
+
+                rc5_max[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc5_max[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc5_max[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc5_max[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC5_TRIM')) {
+                //console.log(param_id);
+                if (!rc5_trim.hasOwnProperty(sys_id)) {
+                    rc5_trim[sys_id] = {};
+                }
+
+                rc5_trim[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc5_trim[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc5_trim[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc5_trim[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
             }
             rc_map.rc1_max = rc1_max[sys_id].param_value;
             rc_map.rc1_trim = rc1_trim[sys_id].param_value;
@@ -819,6 +852,9 @@ function parseMavFromDrone(mavPacket) {
             rc_map.rc4_max = rc4_max[sys_id].param_value;
             rc_map.rc4_trim = rc4_trim[sys_id].param_value;
             rc_map.rc4_min = rc4_min[sys_id].param_value;
+            rc_map.rc5_max = rc4_max[sys_id].param_value;
+            rc_map.rc5_trim = rc4_trim[sys_id].param_value;
+            rc_map.rc5_min = rc4_min[sys_id].param_value;
         }
     } catch (e) {
         console.log(e.message);
