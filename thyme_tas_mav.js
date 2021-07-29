@@ -518,6 +518,40 @@ let rc4_min = {};
 let rc5_max = {};
 let rc5_trim = {};
 let rc5_min = {};
+let rc6_max = {};
+let rc6_trim = {};
+let rc6_min = {};
+let rc7_max = {};
+let rc7_trim = {};
+let rc7_min = {};
+let rc8_max = {};
+let rc8_trim = {};
+let rc8_min = {};
+let rc9_max = {};
+let rc9_trim = {};
+let rc9_min = {};
+let rc10_max = {};
+let rc10_trim = {};
+let rc10_min = {};
+let rc11_max = {};
+let rc11_trim = {};
+let rc11_min = {};
+let rc12_max = {};
+let rc12_trim = {};
+let rc12_min = {};
+let rc13_max = {};
+let rc13_trim = {};
+let rc13_min = {};
+let rc14_max = {};
+let rc14_trim = {};
+let rc14_min = {};
+let rc15_max = {};
+let rc15_trim = {};
+let rc15_min = {};
+let rc16_max = {};
+let rc16_trim = {};
+let rc16_min = {};
+
 global.rc_map = {};
 
 global.rc_channel = {};
@@ -665,17 +699,22 @@ function parseMavFromDrone(mavPacket) {
         } else if (msg_id == mavlink.MAVLINK_MSG_ID_TIMESYNC) { // #111 : TIMESYNC
             muv_mqtt_client.publish(muv_pub_fc_timesync_topic, mavPacket);
         } else if (msg_id == mavlink.MAVLINK_MSG_ID_PARAM_VALUE) {
+            let param_value = 0;
+            let param_count = 0;
+            let param_index = 0;
+            let param_id = 0;
+            let param_type = 0;
             if (ver == 'fd') {
                 base_offset = 20;
-                let param_value = mavPacket.substr(base_offset, 8).toLowerCase();
+                param_value = mavPacket.substr(base_offset, 8).toLowerCase();
                 base_offset += 8;
-                let param_count = mavPacket.substr(base_offset, 4).toLowerCase();
+                param_count = mavPacket.substr(base_offset, 4).toLowerCase();
                 base_offset += 4;
-                let param_index = mavPacket.substr(base_offset, 4).toLowerCase();
+                param_index = mavPacket.substr(base_offset, 4).toLowerCase();
                 base_offset += 4;
-                let param_id = mavPacket.substr(base_offset, 32).toLowerCase();
+                param_id = mavPacket.substr(base_offset, 32).toLowerCase();
                 base_offset += 32;
-                let param_type = mavPacket.substr(base_offset, 2).toLowerCase();
+                param_type = mavPacket.substr(base_offset, 2).toLowerCase();
             } else {
                 base_offset = 12;
                 param_value = mavPacket.substr(base_offset, 8).toLowerCase();
