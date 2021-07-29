@@ -57,8 +57,8 @@ exports.ready = function tas_ready() {
             });
         }
     } else if (my_drone_type === 'pixhawk') {
-        mavPortNum = '/dev/ttyAMA0';
-        mavBaudrate = '57600';
+        mavPortNum = 'COM21';
+        mavBaudrate = '115200';
         mavPortOpening();
     } else {
 
@@ -520,6 +520,8 @@ let rc5_trim = {};
 let rc5_min = {};
 global.rc_map = {};
 
+global.rc_channel = {};
+
 function parseMavFromDrone(mavPacket) {
     try {
         var ver = mavPacket.substr(0, 2);
@@ -839,6 +841,336 @@ function parseMavFromDrone(mavPacket) {
                 rc5_trim[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
                 rc5_trim[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
                 rc5_trim[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC6_MIN')) {
+                //console.log(param_id);
+                if (!rc6_min.hasOwnProperty(sys_id)) {
+                    rc6_min[sys_id] = {};
+                }
+
+                rc6_min[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc6_min[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc6_min[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc6_min[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC6_MAX')) {
+                //console.log(param_id);
+                if (!rc6_max.hasOwnProperty(sys_id)) {
+                    rc6_max[sys_id] = {};
+                }
+
+                rc6_max[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc6_max[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc6_max[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc6_max[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC6_TRIM')) {
+                //console.log(param_id);
+                if (!rc6_trim.hasOwnProperty(sys_id)) {
+                    rc6_trim[sys_id] = {};
+                }
+
+                rc6_trim[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc6_trim[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc6_trim[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc6_trim[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC7_MIN')) {
+                //console.log(param_id);
+                if (!rc7_min.hasOwnProperty(sys_id)) {
+                    rc7_min[sys_id] = {};
+                }
+
+                rc7_min[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc7_min[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc7_min[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc7_min[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC7_MAX')) {
+                //console.log(param_id);
+                if (!rc7_max.hasOwnProperty(sys_id)) {
+                    rc7_max[sys_id] = {};
+                }
+
+                rc7_max[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc7_max[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc7_max[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc7_max[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC7_TRIM')) {
+                //console.log(param_id);
+                if (!rc7_trim.hasOwnProperty(sys_id)) {
+                    rc7_trim[sys_id] = {};
+                }
+
+                rc7_trim[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc7_trim[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc7_trim[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc7_trim[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC8_MIN')) {
+                //console.log(param_id);
+                if (!rc8_min.hasOwnProperty(sys_id)) {
+                    rc8_min[sys_id] = {};
+                }
+
+                rc8_min[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc8_min[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc8_min[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc8_min[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC8_MAX')) {
+                //console.log(param_id);
+                if (!rc8_max.hasOwnProperty(sys_id)) {
+                    rc8_max[sys_id] = {};
+                }
+
+                rc8_max[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc8_max[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc8_max[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc8_max[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC8_TRIM')) {
+                //console.log(param_id);
+                if (!rc8_trim.hasOwnProperty(sys_id)) {
+                    rc8_trim[sys_id] = {};
+                }
+
+                rc8_trim[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc8_trim[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc8_trim[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc8_trim[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC9_MIN')) {
+                //console.log(param_id);
+                if (!rc9_min.hasOwnProperty(sys_id)) {
+                    rc9_min[sys_id] = {};
+                }
+
+                rc9_min[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc9_min[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc9_min[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc9_min[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC9_MAX')) {
+                //console.log(param_id);
+                if (!rc9_max.hasOwnProperty(sys_id)) {
+                    rc9_max[sys_id] = {};
+                }
+
+                rc9_max[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc9_max[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc9_max[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc9_max[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC9_TRIM')) {
+                //console.log(param_id);
+                if (!rc9_trim.hasOwnProperty(sys_id)) {
+                    rc9_trim[sys_id] = {};
+                }
+
+                rc9_trim[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc9_trim[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc9_trim[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc9_trim[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC10_MIN')) {
+                //console.log(param_id);
+                if (!rc10_min.hasOwnProperty(sys_id)) {
+                    rc10_min[sys_id] = {};
+                }
+
+                rc10_min[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc10_min[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc10_min[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc10_min[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC10_MAX')) {
+                //console.log(param_id);
+                if (!rc10_max.hasOwnProperty(sys_id)) {
+                    rc10_max[sys_id] = {};
+                }
+
+                rc10_max[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc10_max[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc10_max[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc10_max[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC10_TRIM')) {
+                //console.log(param_id);
+                if (!rc10_trim.hasOwnProperty(sys_id)) {
+                    rc10_trim[sys_id] = {};
+                }
+
+                rc10_trim[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc10_trim[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc10_trim[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc10_trim[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC11_MIN')) {
+                //console.log(param_id);
+                if (!rc11_min.hasOwnProperty(sys_id)) {
+                    rc11_min[sys_id] = {};
+                }
+
+                rc11_min[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc11_min[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc11_min[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc11_min[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC11_MAX')) {
+                //console.log(param_id);
+                if (!rc11_max.hasOwnProperty(sys_id)) {
+                    rc11_max[sys_id] = {};
+                }
+
+                rc11_max[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc11_max[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc11_max[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc11_max[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC11_TRIM')) {
+                //console.log(param_id);
+                if (!rc11_trim.hasOwnProperty(sys_id)) {
+                    rc11_trim[sys_id] = {};
+                }
+
+                rc11_trim[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc11_trim[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc11_trim[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc11_trim[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC12_MIN')) {
+                //console.log(param_id);
+                if (!rc12_min.hasOwnProperty(sys_id)) {
+                    rc12_min[sys_id] = {};
+                }
+
+                rc12_min[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc12_min[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc12_min[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc12_min[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC12_MAX')) {
+                //console.log(param_id);
+                if (!rc12_max.hasOwnProperty(sys_id)) {
+                    rc12_max[sys_id] = {};
+                }
+
+                rc12_max[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc12_max[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc12_max[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc12_max[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC12_TRIM')) {
+                //console.log(param_id);
+                if (!rc12_trim.hasOwnProperty(sys_id)) {
+                    rc12_trim[sys_id] = {};
+                }
+
+                rc12_trim[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc12_trim[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc12_trim[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc12_trim[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC13_MIN')) {
+                //console.log(param_id);
+                if (!rc13_min.hasOwnProperty(sys_id)) {
+                    rc13_min[sys_id] = {};
+                }
+
+                rc13_min[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc13_min[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc13_min[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc13_min[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC13_MAX')) {
+                //console.log(param_id);
+                if (!rc13_max.hasOwnProperty(sys_id)) {
+                    rc13_max[sys_id] = {};
+                }
+
+                rc13_max[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc13_max[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc13_max[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc13_max[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC13_TRIM')) {
+                //console.log(param_id);
+                if (!rc13_trim.hasOwnProperty(sys_id)) {
+                    rc13_trim[sys_id] = {};
+                }
+
+                rc13_trim[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc13_trim[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc13_trim[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc13_trim[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC14_MIN')) {
+                //console.log(param_id);
+                if (!rc14_min.hasOwnProperty(sys_id)) {
+                    rc14_min[sys_id] = {};
+                }
+
+                rc14_min[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc14_min[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc14_min[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc14_min[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC14_MAX')) {
+                //console.log(param_id);
+                if (!rc14_max.hasOwnProperty(sys_id)) {
+                    rc14_max[sys_id] = {};
+                }
+
+                rc14_max[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc14_max[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc14_max[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc14_max[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC14_TRIM')) {
+                //console.log(param_id);
+                if (!rc14_trim.hasOwnProperty(sys_id)) {
+                    rc14_trim[sys_id] = {};
+                }
+
+                rc14_trim[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc14_trim[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc14_trim[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc14_trim[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC15_MIN')) {
+                //console.log(param_id);
+                if (!rc15_min.hasOwnProperty(sys_id)) {
+                    rc15_min[sys_id] = {};
+                }
+
+                rc15_min[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc15_min[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc15_min[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc15_min[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC15_MAX')) {
+                //console.log(param_id);
+                if (!rc15_max.hasOwnProperty(sys_id)) {
+                    rc15_max[sys_id] = {};
+                }
+
+                rc15_max[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc15_max[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc15_max[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc15_max[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC15_TRIM')) {
+                //console.log(param_id);
+                if (!rc15_trim.hasOwnProperty(sys_id)) {
+                    rc15_trim[sys_id] = {};
+                }
+
+                rc15_trim[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc15_trim[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc15_trim[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc15_trim[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC16_MIN')) {
+                //console.log(param_id);
+                if (!rc16_min.hasOwnProperty(sys_id)) {
+                    rc16_min[sys_id] = {};
+                }
+
+                rc16_min[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc16_min[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc16_min[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc16_min[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC16_MAX')) {
+                //console.log(param_id);
+                if (!rc16_max.hasOwnProperty(sys_id)) {
+                    rc16_max[sys_id] = {};
+                }
+
+                rc16_max[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc16_max[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc16_max[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc16_max[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC16_TRIM')) {
+                //console.log(param_id);
+                if (!rc16_trim.hasOwnProperty(sys_id)) {
+                    rc16_trim[sys_id] = {};
+                }
+
+                rc16_trim[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc16_trim[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc16_trim[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc16_trim[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
             }
             rc_map.rc1_max = rc1_max[sys_id].param_value;
             rc_map.rc1_trim = rc1_trim[sys_id].param_value;
@@ -852,9 +1184,179 @@ function parseMavFromDrone(mavPacket) {
             rc_map.rc4_max = rc4_max[sys_id].param_value;
             rc_map.rc4_trim = rc4_trim[sys_id].param_value;
             rc_map.rc4_min = rc4_min[sys_id].param_value;
-            rc_map.rc5_max = rc4_max[sys_id].param_value;
-            rc_map.rc5_trim = rc4_trim[sys_id].param_value;
-            rc_map.rc5_min = rc4_min[sys_id].param_value;
+            rc_map.rc5_max = rc5_max[sys_id].param_value;
+            rc_map.rc5_trim = rc5_trim[sys_id].param_value;
+            rc_map.rc5_min = rc5_min[sys_id].param_value;
+            rc_map.rc6_max = rc6_max[sys_id].param_value;
+            rc_map.rc6_trim = rc6_trim[sys_id].param_value;
+            rc_map.rc6_min = rc6_min[sys_id].param_value;
+            rc_map.rc7_max = rc7_max[sys_id].param_value;
+            rc_map.rc7_trim = rc7_trim[sys_id].param_value;
+            rc_map.rc7_min = rc7_min[sys_id].param_value;
+            rc_map.rc8_max = rc8_max[sys_id].param_value;
+            rc_map.rc8_trim = rc8_trim[sys_id].param_value;
+            rc_map.rc8_min = rc8_min[sys_id].param_value;
+            rc_map.rc9_max = rc9_max[sys_id].param_value;
+            rc_map.rc9_trim = rc9_trim[sys_id].param_value;
+            rc_map.rc9_min = rc9_min[sys_id].param_value;
+            rc_map.rc10_max = rc10_max[sys_id].param_value;
+            rc_map.rc10_trim = rc10_trim[sys_id].param_value;
+            rc_map.rc10_min = rc10_min[sys_id].param_value;
+            rc_map.rc11_max = rc11_max[sys_id].param_value;
+            rc_map.rc11_trim = rc11_trim[sys_id].param_value;
+            rc_map.rc11_min = rc11_min[sys_id].param_value;
+            rc_map.rc12_max = rc12_max[sys_id].param_value;
+            rc_map.rc12_trim = rc12_trim[sys_id].param_value;
+            rc_map.rc12_min = rc12_min[sys_id].param_value;
+            rc_map.rc13_max = rc13_max[sys_id].param_value;
+            rc_map.rc13_trim = rc13_trim[sys_id].param_value;
+            rc_map.rc13_min = rc13_min[sys_id].param_value;
+            rc_map.rc14_max = rc14_max[sys_id].param_value;
+            rc_map.rc14_trim = rc14_trim[sys_id].param_value;
+            rc_map.rc14_min = rc14_min[sys_id].param_value;
+            rc_map.rc15_max = rc15_max[sys_id].param_value;
+            rc_map.rc15_trim = rc15_trim[sys_id].param_value;
+            rc_map.rc15_min = rc15_min[sys_id].param_value;
+            rc_map.rc16_max = rc16_max[sys_id].param_value;
+            rc_map.rc16_trim = rc16_trim[sys_id].param_value;
+            rc_map.rc16_min = rc16_min[sys_id].param_value;
+        } else if (msg_id == mavlink.MAVLINK_MSG_ID_RC_CHANNELS) {
+            let target_system = '';
+            let chan1_raw = 0;
+            let chan2_raw = 0;
+            let chan3_raw = 0;
+            let chan4_raw = 0;
+            let chan5_raw = 0;
+            let chan6_raw = 0;
+            let chan7_raw = 0;
+            let chan8_raw = 0;
+            let chan9_raw = 0;
+            let chan10_raw = 0;
+            let chan11_raw = 0;
+            let chan12_raw = 0;
+            let chan13_raw = 0;
+            let chan14_raw = 0;
+            let chan15_raw = 0;
+            let chan16_raw = 0;
+            let chan17_raw = 0;
+            let chan18_raw = 0;
+            let rssi = 0;
+            if (ver == 'fd') {
+                base_offset = 20;
+                target_system = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                chan1_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan2_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan3_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan4_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan5_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan6_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan7_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan8_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan9_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan10_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan11_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan12_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan13_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan14_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan15_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan16_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan17_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan18_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+            } else {
+                base_offset = 12;
+                target_system = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                chan1_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan2_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan3_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan4_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan5_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan6_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan7_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan8_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan9_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan10_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan11_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan12_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan13_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan14_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan15_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan16_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan17_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan18_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+            }
+
+            chan1_raw = Buffer.from(chan1_raw, 'hex').readInt16LE(0);
+            rc_channel.chan1_raw = chan1_raw;
+            chan2_raw = Buffer.from(chan2_raw, 'hex').readInt16LE(0);
+            rc_channel.chan2_raw = chan2_raw;
+            chan3_raw = Buffer.from(chan3_raw, 'hex').readInt16LE(0);
+            rc_channel.chan3_raw = chan3_raw;
+            chan4_raw = Buffer.from(chan4_raw, 'hex').readInt16LE(0);
+            rc_channel.chan4_raw = chan4_raw;
+            chan5_raw = Buffer.from(chan5_raw, 'hex').readInt16LE(0);
+            rc_channel.chan5_raw = chan5_raw;
+            chan6_raw = Buffer.from(chan6_raw, 'hex').readInt16LE(0);
+            rc_channel.chan6_raw = chan6_raw;
+            chan7_raw = Buffer.from(chan7_raw, 'hex').readInt16LE(0);
+            rc_channel.chan7_raw = chan7_raw;
+            chan8_raw = Buffer.from(chan8_raw, 'hex').readInt16LE(0);
+            rc_channel.chan8_raw = chan8_raw;
+            chan9_raw = Buffer.from(chan9_raw, 'hex').readInt16LE(0);
+            rc_channel.chan9_raw = chan9_raw;
+            chan10_raw = Buffer.from(chan10_raw, 'hex').readInt16LE(0);
+            rc_channel.chan10_raw = chan10_raw;
+            chan11_raw = Buffer.from(chan11_raw, 'hex').readInt16LE(0);
+            rc_channel.chan11_raw = chan11_raw;
+            chan12_raw = Buffer.from(chan12_raw, 'hex').readInt16LE(0);
+            rc_channel.chan12_raw = chan12_raw;
+            chan13_raw = Buffer.from(chan13_raw, 'hex').readInt16LE(0);
+            rc_channel.chan13_raw = chan13_raw;
+            chan14_raw = Buffer.from(chan14_raw, 'hex').readInt16LE(0);
+            rc_channel.chan14_raw = chan14_raw;
+            chan15_raw = Buffer.from(chan15_raw, 'hex').readInt16LE(0);
+            rc_channel.chan15_raw = chan15_raw;
+            chan16_raw = Buffer.from(chan16_raw, 'hex').readInt16LE(0);
+            rc_channel.chan16_raw = chan16_raw;
+            chan17_raw = Buffer.from(chan17_raw, 'hex').readInt16LE(0);
+            rc_channel.chan17_raw = chan17_raw;
+            chan18_raw = Buffer.from(chan18_raw, 'hex').readInt16LE(0);
+            rc_channel.chan18_raw = chan18_raw;
         }
     } catch (e) {
         console.log(e.message);
