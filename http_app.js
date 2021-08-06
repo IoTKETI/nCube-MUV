@@ -71,8 +71,7 @@ var muv_sub_gcs_topic = '';
 
 var muv_sub_msw_topic = [];
 
-let sub_rc_topic = '';
-let pub_rc_topic = '';
+let req_rc_topic = '';
 
 global.muv_pub_fc_gpi_topic = '';
 global.muv_pub_fc_hb_topic = '';
@@ -147,7 +146,7 @@ function ready_for_notification() {
                 }
             }
         }
-        mqtt_connect(conf.cse.host, muv_sub_gcs_topic, noti_topic, sub_rc_topic);
+        mqtt_connect(conf.cse.host, muv_sub_gcs_topic, noti_topic);
 
         muv_mqtt_connect('localhost', 1883, muv_sub_msw_topic);
     }
@@ -552,8 +551,7 @@ function retrieve_my_cnt_name(callback) {
                                     if (drone_info.hasOwnProperty('rc')) {
                                         my_rc_name = drone_info.rc;
                                         if (mission_name === 'msw_lte_rc') {
-                                            sub_rc_topic = '/Mobius/' + drone_info.gcs + '/RC_Data/' + my_rc_name + '/command';
-                                            pub_rc_topic = '/Mobius/' + drone_info.gcs + '/Mission_Data/' + drone_info.drone + '/' + mission_name + '/REMOTE';
+                                            req_rc_topic = '/Mobius/' + drone_info.gcs + '/RC_Data/' + my_rc_name + '/request';
                                         }
                                     }
                                 }
@@ -759,7 +757,7 @@ function check_rtv_cnt() {
 // for notification
 //var xmlParser = bodyParser.text({ type: '*/*' });
 
-function mqtt_connect(serverip, sub_gcs_topic, noti_topic, sub_rc_topic) {
+function mqtt_connect(serverip, sub_gcs_topic, noti_topic) {
     if (mqtt_client == null) {
         if (conf.usesecure === 'disable') {
             var connectOptions = {
@@ -806,24 +804,17 @@ function mqtt_connect(serverip, sub_gcs_topic, noti_topic, sub_rc_topic) {
                 });
             }
 
-            if (sub_rc_topic !== '') {
-                mqtt_client.subscribe(sub_rc_topic, function () {
-                    console.log('[mqtt_connect] sub_rc_topic is subscribed: ' + sub_rc_topic);
-                });
-            }
-
             if (noti_topic != '') {
                 mqtt_client.subscribe(noti_topic, function () {
                     console.log('[mqtt_connect] noti_topic is subscribed:  ' + noti_topic);
                 });
             }
+            mqtt_client.publish(req_rc_topic, drone_info.drone);
         });
 
         mqtt_client.on('message', function (topic, message) {
             if (topic == sub_gcs_topic) {
                 tas_mav.gcs_noti_handler(message);
-            } else if (topic == sub_rc_topic) {
-                mqtt_client.publish(pub_rc_topic, message);
             } else {
                 if (topic.includes('/oneM2M/req/')) {
                     var jsonObj = JSON.parse(message.toString());
@@ -917,18 +908,3 @@ function send_to_Mobius(topic, content_each_obj, gap) {
         });
     }, gap, topic, content_each_obj);
 }
-
-// for test
-// setInterval(function () {
-//     if (sh_state === 'crtci') {
-//         var fc = {};
-//         fc.global_position_int = {};
-//         fc.global_position_int.time_boot_ms = parseInt(Math.random()*100);
-//         fc.global_position_int.lat = parseInt(Math.random()*100);
-//         fc.global_position_int.lon = parseInt(Math.random()*100);
-//         fc.global_position_int.alt = parseInt(Math.random()*100);
-//
-//         var fc_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone +'/global_position_int';
-//         muv_mqtt_client.publish(fc_topic, JSON.stringify(fc.global_position_int));
-//     }
-// }, 1500);
