@@ -506,15 +506,19 @@ var cal_sortiename = '';
 let rc1_max = {};
 let rc1_trim = {};
 let rc1_min = {};
+let rc1_reversed = {};
 let rc2_max = {};
 let rc2_trim = {};
 let rc2_min = {};
+let rc2_reversed = {};
 let rc3_max = {};
 let rc3_trim = {};
 let rc3_min = {};
+let rc3_reversed = {};
 let rc4_max = {};
 let rc4_trim = {};
 let rc4_min = {};
+let rc4_reversed = {};
 let rc5_max = {};
 let rc5_trim = {};
 let rc5_min = {};
@@ -730,6 +734,16 @@ function parseMavFromDrone(mavPacket) {
                 rc1_trim[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
                 rc1_trim[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
                 rc1_trim[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC1_REVERSED')) {
+                if (!rc1_reversed.hasOwnProperty(sys_id)) {
+                    rc1_reversed[sys_id] = {};
+                }
+
+                rc1_reversed[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc1_reversed[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc1_reversed[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc1_reversed[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+                // console.log('\r\n+++++++++++++++++++++', rc1_reversed, '+++++++++++++++++++++\r\n');
             } else if (param_id.includes('RC2_MIN')) {
                 //console.log(param_id);
                 if (!rc2_min.hasOwnProperty(sys_id)) {
@@ -760,6 +774,15 @@ function parseMavFromDrone(mavPacket) {
                 rc2_trim[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
                 rc2_trim[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
                 rc2_trim[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC2_REVERSED')) {
+                if (!rc2_reversed.hasOwnProperty(sys_id)) {
+                    rc2_reversed[sys_id] = {};
+                }
+
+                rc2_reversed[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc2_reversed[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc2_reversed[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc2_reversed[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
             } else if (param_id.includes('RC3_MIN')) {
                 //console.log(param_id);
                 if (!rc3_min.hasOwnProperty(sys_id)) {
@@ -790,6 +813,15 @@ function parseMavFromDrone(mavPacket) {
                 rc3_trim[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
                 rc3_trim[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
                 rc3_trim[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC3_REVERSED')) {
+                if (!rc3_reversed.hasOwnProperty(sys_id)) {
+                    rc3_reversed[sys_id] = {};
+                }
+
+                rc3_reversed[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc3_reversed[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc3_reversed[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc3_reversed[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
             } else if (param_id.includes('RC4_MIN')) {
                 //console.log(param_id);
                 if (!rc4_min.hasOwnProperty(sys_id)) {
@@ -820,6 +852,15 @@ function parseMavFromDrone(mavPacket) {
                 rc4_trim[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
                 rc4_trim[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
                 rc4_trim[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC4_REVERSED')) {
+                if (!rc4_reversed.hasOwnProperty(sys_id)) {
+                    rc4_reversed[sys_id] = {};
+                }
+
+                rc4_reversed[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc4_reversed[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc4_reversed[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc4_reversed[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
             } else if (param_id.includes('RC5_MIN')) {
                 //console.log(param_id);
                 if (!rc5_min.hasOwnProperty(sys_id)) {
@@ -884,15 +925,19 @@ function parseMavFromDrone(mavPacket) {
             rc_map.rc1_max = rc1_max[sys_id].param_value;
             rc_map.rc1_trim = rc1_trim[sys_id].param_value;
             rc_map.rc1_min = rc1_min[sys_id].param_value;
+            rc_map.rc1_reversed = rc1_reversed[sys_id].param_value;
             rc_map.rc2_max = rc2_max[sys_id].param_value;
             rc_map.rc2_trim = rc2_trim[sys_id].param_value;
             rc_map.rc2_min = rc2_min[sys_id].param_value;
+            rc_map.rc2_reversed = rc2_reversed[sys_id].param_value;
             rc_map.rc3_max = rc3_max[sys_id].param_value;
             rc_map.rc3_trim = rc3_trim[sys_id].param_value;
             rc_map.rc3_min = rc3_min[sys_id].param_value;
+            rc_map.rc3_reversed = rc3_reversed[sys_id].param_value;
             rc_map.rc4_max = rc4_max[sys_id].param_value;
             rc_map.rc4_trim = rc4_trim[sys_id].param_value;
             rc_map.rc4_min = rc4_min[sys_id].param_value;
+            rc_map.rc4_reversed = rc4_reversed[sys_id].param_value;
             rc_map.rc5_max = rc5_max[sys_id].param_value;
             rc_map.rc5_trim = rc5_trim[sys_id].param_value;
             rc_map.rc5_min = rc5_min[sys_id].param_value;
@@ -1039,7 +1084,7 @@ function parseMavFromDrone(mavPacket) {
             rc_channel.chan18_raw = chan18_raw;
         }
     } catch (e) {
-        console.log(e.message);
+        console.log('[parseMavFromDrone Error]', e.message);
     }
 }
 
