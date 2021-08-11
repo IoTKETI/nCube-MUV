@@ -34,6 +34,7 @@ var tas_mav = require('./thyme_tas_mav');
 var HTTP_SUBSCRIPTION_ENABLE = 0;
 var MQTT_SUBSCRIPTION_ENABLE = 0;
 
+global.my_webrtc_room = '';
 global.my_rc_name = '';
 global.my_gcs_name = '';
 global.my_parent_cnt_name = '';
@@ -355,7 +356,7 @@ function requireMsw(mission_name, directory_name) {
             webrtc_conf.directory_name = directory_name;
             webrtc_conf.host = drone_info.host;
             webrtc_conf.display_name = drone_info.drone;
-            webrtc_conf.thismav_sysid = my_system_id;
+            webrtc_conf.thismav_sysid = my_webrtc_room;
             fs.writeFileSync('webrtc_conf.json', JSON.stringify(webrtc_conf, null, 4), 'utf8');
         }
         // pm2 start msw_webrtc_msw_webrtc/msw_webrtc
@@ -550,6 +551,12 @@ function retrieve_my_cnt_name(callback) {
 
                                     if (drone_info.hasOwnProperty('rc')) {
                                         my_rc_name = drone_info.rc;
+                                        if (mission_name === 'msw_lte_rc') {
+                                            req_rc_topic = '/Mobius/' + drone_info.gcs + '/RC_Data/' + my_rc_name + '/request';
+                                        }
+                                    }
+                                    if (drone_info.hasOwnProperty('room')) {
+                                        my_webrtc_room = drone_info.room;
                                         if (mission_name === 'msw_lte_rc') {
                                             req_rc_topic = '/Mobius/' + drone_info.gcs + '/RC_Data/' + my_rc_name + '/request';
                                         }
