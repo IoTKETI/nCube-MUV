@@ -557,9 +557,6 @@ function retrieve_my_cnt_name(callback) {
                                     }
                                     if (drone_info.hasOwnProperty('room')) {
                                         my_webrtc_room = drone_info.room;
-                                        if (mission_name === 'msw_lte_rc') {
-                                            req_rc_topic = '/Mobius/' + drone_info.gcs + '/RC_Data/' + my_rc_name + '/request';
-                                        }
                                     }
                                 }
                             }
@@ -816,7 +813,11 @@ function mqtt_connect(serverip, sub_gcs_topic, noti_topic) {
                     console.log('[mqtt_connect] noti_topic is subscribed:  ' + noti_topic);
                 });
             }
-            mqtt_client.publish(req_rc_topic, drone_info.drone);
+            if (req_rc_topic !== '') {
+                mqtt_client.publish(req_rc_topic, drone_info.drone, function (){
+                    console.log('[mqtt_connect] send my_drone_name to nCube-RC [' + my_rc_name + '] :  ' + drone_info.drone);
+                });
+            }
         });
 
         mqtt_client.on('message', function (topic, message) {
