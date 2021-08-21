@@ -26,7 +26,7 @@ var socket_mav = null;
 global.mavPort = null;
 
 var mavPortNum = '/dev/ttyAMA0';
-var mavBaudrate = '57600';
+var mavBaudrate = '115200';
 
 exports.ready = function tas_ready() {
     if (my_drone_type === 'dji') {
@@ -58,7 +58,7 @@ exports.ready = function tas_ready() {
         }
     } else if (my_drone_type === 'pixhawk') {
         mavPortNum = '/dev/ttyAMA0';
-        mavBaudrate = '57600';
+        mavBaudrate = '115200';
         mavPortOpening();
     } else {
 
