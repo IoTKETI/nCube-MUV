@@ -549,12 +549,6 @@ function retrieve_my_cnt_name(callback) {
                                     info.nu = 'mqtt://' + conf.cse.host + '/' + conf.ae.id + '?ct=json';
                                     conf.sub.push(JSON.parse(JSON.stringify(info)));
 
-                                    if (drone_info.hasOwnProperty('rc')) {
-                                        my_rc_name = drone_info.rc;
-                                        if (mission_name === 'msw_lte_rc') {
-                                            req_rc_topic = '/Mobius/' + drone_info.gcs + '/RC_Data/' + my_rc_name + '/request';
-                                        }
-                                    }
                                     if (drone_info.hasOwnProperty('room')) {
                                         my_webrtc_room = drone_info.room;
                                     }
