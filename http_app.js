@@ -461,7 +461,6 @@ function retrieve_my_cnt_name(callback) {
             if (drone_info.hasOwnProperty('host')) {
                 conf.cse.host = drone_info.host;
             } else {
-                conf.cse.host = '203.253.128.177';
             }
 
             console.log("gcs host is " + conf.cse.host);
