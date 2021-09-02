@@ -61,7 +61,6 @@ exports.ready = function tas_ready() {
         mavBaudrate = '115200';
         mavPortOpening();
     } else {
-
     }
 };
 
@@ -1082,6 +1081,110 @@ function parseMavFromDrone(mavPacket) {
             rc_channel.chan17_raw = chan17_raw;
             chan18_raw = Buffer.from(chan18_raw, 'hex').readInt16LE(0);
             rc_channel.chan18_raw = chan18_raw;
+        } else if (msg_id === mavlink.MAVLINK_MSG_ID_ATTITUDE){
+            if (ver == 'fd') {
+                var base_offset = 20;
+                var time_boot_ms = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var roll = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var pitch = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var yaw = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var rollspeed = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var pitchspeed = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var yawspeed = mavPacket.substr(base_offset, 8).toLowerCase();
+            } else {
+                base_offset = 12;
+                time_boot_ms = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var roll = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var pitch = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var yaw = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var rollspeed = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var pitchspeed = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var yawspeed = mavPacket.substr(base_offset, 8).toLowerCase();
+            }
+
+            fc.attitude.time_boot_ms = Buffer.from(time_boot_ms, 'hex').readUInt32LE(0);
+            fc.attitude.roll = Buffer.from(roll, 'hex').readFloatLE(0);
+            fc.attitude.pitch = Buffer.from(pitch, 'hex').readFloatLE(0);
+            fc.attitude.yaw = Buffer.from(yaw, 'hex').readFloatLE(0);
+            fc.attitude.rollspeed = Buffer.from(rollspeed, 'hex').readFloatLE(0);
+            fc.attitude.pitchspeed = Buffer.from(pitchspeed, 'hex').readFloatLE(0);
+            fc.attitude.yawspeed = Buffer.from(yawspeed, 'hex').readFloatLE(0);
+
+            muv_mqtt_client.publish(muv_pub_fc_attitude_topic, JSON.stringify(fc.attitude));
+        } else if (msg_id === mavlink.MAVLINK_MSG_ID_BATTERY_STATUS){
+            console.log(mavPacket);
+            if (ver == 'fd') {
+                var base_offset = 20;
+                var id = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var battery_function = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                var type = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                var temperature = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                var voltages = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                var current_battery = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                var current_consumed = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var energy_consumed = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var battery_remaining = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var time_remaining = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                var charge_state = mavPacket.substr(base_offset, 4).toLowerCase();
+            } else {
+                base_offset = 12;
+                var id = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var battery_function = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                var type = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                var temperature = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                var voltages = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                var current_battery = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                var current_consumed = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var energy_consumed = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var battery_remaining = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var time_remaining = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                var charge_state = mavPacket.substr(base_offset, 4).toLowerCase();
+            }
+
+            fc.battery_status.id = Buffer.from(id, 'hex').readUInt16LE(0);
+            fc.battery_status.battery_function = Buffer.from(battery_function, 'hex').readUInt16LE(0);
+            fc.battery_status.type = Buffer.from(type, 'hex').readUInt16LE(0);
+            fc.battery_status.temperature = Buffer.from(temperature, 'hex').readUInt16LE(0);
+            fc.battery_status.voltages = Buffer.from(voltages, 'hex').readUInt16LE(0);
+            fc.battery_status.current_battery = Buffer.from(current_battery, 'hex').readUInt16LE(0);
+            fc.battery_status.current_consumed = Buffer.from(current_consumed, 'hex').readInt32LE(0);
+            fc.battery_status.battery_remaining = Buffer.from(battery_remaining, 'hex').readInt32LE(0);
+            fc.battery_status.time_remaining = Buffer.from(time_remaining, 'hex').readUInt16LE(0);
+            fc.battery_status.charge_state = Buffer.from(charge_state, 'hex').readUInt16LE(0);
+
+            muv_mqtt_client.publish(muv_pub_fc_bat_state_topic, JSON.stringify(fc.battery_status));
         }
     } catch (e) {
         console.log('[parseMavFromDrone Error]', e.message);
