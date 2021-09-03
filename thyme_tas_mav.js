@@ -458,33 +458,27 @@ var mavStrFromDrone = '';
 var mavStrFromDroneLength = 0;
 
 function mavPortData(data) {
-    if(mavStrFromDroneLength > 0) {
-        mavStrFromDrone = mavStrFromDrone.substr(mavStrFromDroneLength);
-        mavStrFromDroneLength = 0;
-    }
+    // if(mavStrFromDroneLength > 0) {
+    //     mavStrFromDrone = mavStrFromDrone.substr(mavStrFromDroneLength);
+    //     mavStrFromDroneLength = 0;
+    // }
 
-    mavStrFromDrone += hex(data);
+    mavStrFromDrone += data.toString('hex').toLowerCase();
     while(mavStrFromDrone.length > 12) {
         var stx = mavStrFromDrone.substr(0, 2);
         if(stx === 'fe') {
-            if (stx === 'fe') {
-                var len = parseInt(mavStrFromDrone.substr(2, 2), 16);
-                var mavLength = (6 * 2) + (len * 2) + (2 * 2);
-            }
-            else { // if (stx === 'fd') {
-                len = parseInt(mavStrFromDrone.substr(2, 2), 16);
-                mavLength = (10 * 2) + (len * 2) + (2 * 2);
-            }
+            var len = parseInt(mavStrFromDrone.substr(2, 2), 16);
+            var mavLength = (6 * 2) + (len * 2) + (2 * 2);
 
-            if ((mavStrFromDrone.length - mavStrFromDroneLength) >= mavLength) {
-                mavStrFromDroneLength += mavLength;
+            if(mavLength > mavStrFromDrone.length) {
+                break;
+            }
+            else {
                 var mavPacket = mavStrFromDrone.substr(0, mavLength);
+                mavStrFromDrone = mavStrFromDrone.substr(mavLength);
                 mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
                 send_aggr_to_Mobius(my_cnt_name, mavPacket, 1500);
                 setTimeout(parseMavFromDrone, 0, mavPacket);
-            }
-            else {
-                break;
             }
         }
         else {
