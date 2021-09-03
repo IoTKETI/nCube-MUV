@@ -23,13 +23,13 @@ var mavlink = require('./mavlibrary/mavlink.js');
 var _server = null;
 
 var socket_mav = null;
-var mavPort = null;
+global.mavPort = null;
 
 var mavPortNum = '/dev/ttyAMA0';
-var mavBaudrate = '57600';
+var mavBaudrate = '115200';
 
 exports.ready = function tas_ready() {
-    if(my_drone_type === 'dji') {
+    if (my_drone_type === 'dji') {
         if (_server == null) {
             _server = net.createServer(function (socket) {
                 console.log('socket connected');
@@ -56,62 +56,27 @@ exports.ready = function tas_ready() {
                 // setTimeout(dji_sdk_launch, 1500);
             });
         }
-    }
-    else if(my_drone_type === 'pixhawk') {
+    } else if (my_drone_type === 'pixhawk') {
         mavPortNum = '/dev/ttyAMA0';
-        mavBaudrate = '57600';
+        mavBaudrate = '115200';
         mavPortOpening();
-    }
-    else {
-
+    } else {
     }
 };
-
-
-// var spawn = require('child_process').spawn;
-// var djiosdk = null;
-//
-// function dji_sdk_launch() {
-//     djiosdk = spawn('./djiosdk-Mobius', ['UserConfig.txt']);
-//
-//     djiosdk.stdout.on('data', function(data) {
-//         console.log('stdout: ' + data);
-//     });
-//
-//     djiosdk.stderr.on('data', function(data) {
-//         console.log('stderr: ' + data);
-//
-//         //setTimeout(dji_sdk_launch, 1500);
-//     });
-//
-//     djiosdk.on('exit', function(code) {
-//         console.log('exit: ' + code);
-//
-//         setTimeout(dji_sdk_launch, 1000);
-//     });
-//
-//     djiosdk.on('error', function(code) {
-//         console.log('error: ' + code);
-//
-//         //setTimeout(dji_sdk_launch, 1000);
-//     });
-// }
-
 
 var aggr_content = {};
 
 function send_aggr_to_Mobius(topic, content_each, gap) {
-    if(aggr_content.hasOwnProperty(topic)) {
+    if (aggr_content.hasOwnProperty(topic)) {
         var timestamp = moment().format('YYYY-MM-DDTHH:mm:ssSSS');
         aggr_content[topic][timestamp] = content_each;
-    }
-    else {
+    } else {
         aggr_content[topic] = {};
         timestamp = moment().format('YYYY-MM-DDTHH:mm:ssSSS');
         aggr_content[topic][timestamp] = content_each;
 
         setTimeout(function () {
-            sh_adn.crtci(topic+'?rcn=0', 0, aggr_content[topic], null, function () {
+            sh_adn.crtci(topic + '?rcn=0', 0, aggr_content[topic], null, function () {
 
             });
 
@@ -126,11 +91,11 @@ function mavlinkGenerateMessage(sysId, type, params) {
         var mavMsg = null;
         var genMsg = null;
         //var targetSysId = sysId;
-        var targetCompId = (params.targetCompId == undefined)?
-            0:
+        var targetCompId = (params.targetCompId == undefined) ?
+            0 :
             params.targetCompId;
 
-        switch( type ) {
+        switch (type) {
             // MESSAGE ////////////////////////////////////
             case mavlink.MAVLINK_MSG_ID_PING:
                 mavMsg = new mavlink.messages.ping(params.time_usec, params.seq, params.target_system, params.target_component);
@@ -195,10 +160,15 @@ function mavlinkGenerateMessage(sysId, type, params) {
                     params.errors_count3,
                     params.errors_count4);
                 break;
+            case mavlink.MAVLINK_MSG_ID_PARAM_REQUEST_READ:
+                mavMsg = new mavlink.messages.param_request_read(params.target_system,
+                    params.target_component,
+                    params.param_id,
+                    params.param_index);
+                break;
         }
-    }
-    catch( e ) {
-        console.log( 'MAVLINK EX:' + e );
+    } catch (e) {
+        console.log('MAVLINK EX:' + e);
     }
 
     if (mavMsg) {
@@ -214,17 +184,15 @@ function sendDroneMessage(type, params) {
         var msg = mavlinkGenerateMessage(my_system_id, type, params);
         if (msg == null) {
             console.log("mavlink message is null");
-        }
-        else {
+        } else {
             // console.log('msg: ', msg);
             // console.log('msg_seq : ', msg.slice(2,3));
             //mqtt_client.publish(my_cnt_name, msg.toString('hex'));
             //_this.send_aggr_to_Mobius(my_cnt_name, msg.toString('hex'), 1500);
             mavPortData(msg);
         }
-    }
-    catch( ex ) {
-        console.log( '[ERROR] ' + ex );
+    } catch (ex) {
+        console.log('[ERROR] ' + ex);
     }
 }
 
@@ -268,10 +236,9 @@ function dji_handler(data) {
     params.type = 2;
     params.autopilot = 3;
 
-    if(dji.flightstatus == '0') {
+    if (dji.flightstatus == '0') {
         params.base_mode = 81;
-    }
-    else {
+    } else {
         params.base_mode = (81 | 0x80);
     }
 
@@ -343,46 +310,41 @@ exports.noti = function (path_arr, cinObj, socket) {
 
     if (cin.con == '') {
         console.log('---- is not cin message');
-    }
-    else {
+    } else {
         socket.write(JSON.stringify(cin));
     }
 };
 
 exports.gcs_noti_handler = function (message) {
-    if(my_drone_type === 'dji') {
+    if (my_drone_type === 'dji') {
         var com_msg = message.toString();
         var com_message = com_msg.split(":");
         var msg_command = com_message[0];
 
         if (msg_command == 't' || msg_command == 'h' || msg_command == 'l') {
             socket_mav.write(message);
-        }
-        else if (msg_command == 'g') {
-            if(com_message.length < 5) {
-                for(var i = 0; i < (5-com_message.length); i++) {
+        } else if (msg_command == 'g') {
+            if (com_message.length < 5) {
+                for (var i = 0; i < (5 - com_message.length); i++) {
                     com_msg += ':0';
                 }
                 message = Buffer.from(com_msg);
             }
             socket_mav.write(message);
 
-            var msg_lat = com_message[1].substring(0,7);
-            var msg_lon = com_message[2].substring(0,7);
-            var msg_alt = com_message[3].substring(0,3);
-        }
-        else if (msg_command == 'm'|| msg_command == 'a') {
+            var msg_lat = com_message[1].substring(0, 7);
+            var msg_lon = com_message[2].substring(0, 7);
+            var msg_alt = com_message[3].substring(0, 3);
+        } else if (msg_command == 'm' || msg_command == 'a') {
             socket_mav.write(message);
         }
-    }
-    else if(my_drone_type === 'pixhawk') {
+    } else if (my_drone_type === 'pixhawk') {
         if (mavPort != null) {
             if (mavPort.isOpen) {
                 mavPort.write(message);
             }
         }
-    }
-    else {
+    } else {
 
     }
 };
@@ -399,12 +361,10 @@ function mavPortOpening() {
         mavPort.on('close', mavPortClose);
         mavPort.on('error', mavPortError);
         mavPort.on('data', mavPortData);
-    }
-    else {
+    } else {
         if (mavPort.isOpen) {
 
-        }
-        else {
+        } else {
             mavPort.open();
         }
     }
@@ -425,8 +385,7 @@ function mavPortError(error) {
     console.log('[mavPort error]: ' + error.message);
     if (error_str.substring(0, 14) == "Error: Opening") {
 
-    }
-    else {
+    } else {
         console.log('mavPort error : ' + error);
     }
 
@@ -437,14 +396,12 @@ global.mav_ver = 1;
 
 const byteToHex = [];
 
-for (let n = 0; n <= 0xff; ++n)
-{
+for (let n = 0; n <= 0xff; ++n) {
     const hexOctet = n.toString(16).padStart(2, "0");
     byteToHex.push(hexOctet);
 }
 
-function hex(arrayBuffer)
-{
+function hex(arrayBuffer) {
     const buff = new Uint8Array(arrayBuffer);
     const hexOctets = []; // new Array(buff.length) is even faster (preallocates necessary array size), then use hexOctets[i] instead of .push()
 
@@ -458,111 +415,37 @@ var mavStrFromDrone = '';
 var mavStrFromDroneLength = 0;
 
 function mavPortData(data) {
-    // if(mavStrFromDroneLength > 0) {
-    //     mavStrFromDrone = mavStrFromDrone.substr(mavStrFromDroneLength);
-    //     mavStrFromDroneLength = 0;
-    // }
-
     mavStrFromDrone += data.toString('hex').toLowerCase();
-    while(mavStrFromDrone.length > 12) {
+    while (mavStrFromDrone.length > 12) {
         var stx = mavStrFromDrone.substr(0, 2);
-        if(stx === 'fe') {
+        if (stx === 'fe') {
             var len = parseInt(mavStrFromDrone.substr(2, 2), 16);
             var mavLength = (6 * 2) + (len * 2) + (2 * 2);
 
-            if(mavLength > mavStrFromDrone.length) {
-                break;
-            }
-            else {
+            if ((mavStrFromDrone.length) >= mavLength) {
                 var mavPacket = mavStrFromDrone.substr(0, mavLength);
-                mavStrFromDrone = mavStrFromDrone.substr(mavLength);
                 mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
                 send_aggr_to_Mobius(my_cnt_name, mavPacket, 1500);
                 setTimeout(parseMavFromDrone, 0, mavPacket);
+
+                //if(mavStrFromDroneLength > 0) {
+                mavStrFromDrone = mavStrFromDrone.substr(mavLength);
+                mavStrFromDroneLength = 0;
+                //}
+            } else {
+                break;
             }
-        }
-        else {
+        } else {
             mavStrFromDrone = mavStrFromDrone.substr(2);
             //console.log(mavStrFromDrone);
         }
     }
 }
-//
-// var mavStr = [];
-// var mavStrPacket = '';
-//
-// function mavPortData(data) {
-//     mavStr += data.toString('hex');
-//     if(data[0] == 0xfe || data[0] == 0xfd) {
-//         var mavStrArr = [];
-//
-//         var str = '';
-//         var split_idx = 0;
-//
-//         mavStrArr[split_idx] = str;
-//         for (var i = 0; i < mavStr.length; i+=2) {
-//             str = mavStr.substr(i, 2);
-//
-//             if(mav_ver == 1) {
-//                 if (str == 'fe') {
-//                     mavStrArr[++split_idx] = '';
-//                 }
-//             }
-//             else if(mav_ver == 2) {
-//                 if (str == 'fd') {
-//                     mavStrArr[++split_idx] = '';
-//                 }
-//             }
-//
-//             mavStrArr[split_idx] += str;
-//         }
-//         mavStrArr.splice(0, 1);
-//
-//         var mavPacket = '';
-//         for (var idx in mavStrArr) {
-//             if(mavStrArr.hasOwnProperty(idx)) {
-//                 mavPacket = mavStrPacket + mavStrArr[idx];
-//
-//                 if(mav_ver == 1) {
-//                     var refLen = (parseInt(mavPacket.substr(2, 2), 16) + 8) * 2;
-//                 }
-//                 else if(mav_ver == 2) {
-//                     refLen = (parseInt(mavPacket.substr(2, 2), 16) + 12) * 2;
-//                 }
-//
-//                 if(refLen == mavPacket.length) {
-//                     mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
-//                     send_aggr_to_Mobius(my_cnt_name, mavPacket, 1500);
-//                     mavStrPacket = '';
-//
-//                     setTimeout(parseMav, 0, mavPacket);
-//                 }
-//                 else if(refLen < mavPacket.length) {
-//                     mavStrPacket = '';
-//                     //console.log('                        ' + mavStrArr[idx]);
-//                 }
-//                 else {
-//                     mavStrPacket = mavPacket;
-//                     //console.log('                ' + mavStrPacket.length + ' - ' + mavStrPacket);
-//                 }
-//             }
-//         }
-//
-//         if(mavStrPacket != '') {
-//             mavStr = mavStrPacket;
-//             mavStrPacket = '';
-//         }
-//         else {
-//             mavStr = '';
-//         }
-//     }
-// }
 
 var fc = {};
 try {
     fc = JSON.parse(fs.readFileSync('fc_data_model.json', 'utf8'));
-}
-catch (e) {
+} catch (e) {
     fc.heartbeat = {};
     fc.heartbeat.type = 2;
     fc.heartbeat.autopilot = 3;
@@ -606,14 +489,44 @@ catch (e) {
 }
 
 var flag_base_mode = 0;
+var start_arm_time = 0;
+var cal_flag = 0;
+var cal_sortiename = '';
+
+let rc1_max = {};
+let rc1_trim = {};
+let rc1_min = {};
+let rc1_reversed = {};
+let rc2_max = {};
+let rc2_trim = {};
+let rc2_min = {};
+let rc2_reversed = {};
+let rc3_max = {};
+let rc3_trim = {};
+let rc3_min = {};
+let rc3_reversed = {};
+let rc4_max = {};
+let rc4_trim = {};
+let rc4_min = {};
+let rc4_reversed = {};
+let rc5_max = {};
+let rc5_trim = {};
+let rc5_min = {};
+let rc6_max = {};
+let rc6_trim = {};
+let rc6_min = {};
+
+global.rc_map = {};
+
+global.rc_channel = {};
+
 function parseMavFromDrone(mavPacket) {
     try {
         var ver = mavPacket.substr(0, 2);
         if (ver == 'fd') {
             var sysid = mavPacket.substr(10, 2).toLowerCase();
             var msgid = mavPacket.substr(14, 6).toLowerCase();
-        }
-        else {
+        } else {
             sysid = mavPacket.substr(6, 2).toLowerCase();
             msgid = mavPacket.substr(10, 2).toLowerCase();
         }
@@ -635,8 +548,7 @@ function parseMavFromDrone(mavPacket) {
                 var alt = mavPacket.substr(base_offset, 8).toLowerCase();
                 base_offset += 8;
                 var relative_alt = mavPacket.substr(base_offset, 8).toLowerCase();
-            }
-            else {
+            } else {
                 base_offset = 12;
                 time_boot_ms = mavPacket.substr(base_offset, 8).toLowerCase();
                 base_offset += 8;
@@ -656,9 +568,7 @@ function parseMavFromDrone(mavPacket) {
             fc.global_position_int.relative_alt = Buffer.from(relative_alt, 'hex').readInt32LE(0);
 
             muv_mqtt_client.publish(muv_pub_fc_gpi_topic, JSON.stringify(fc.global_position_int));
-        }
-
-        else if (msg_id == mavlink.MAVLINK_MSG_ID_COMMAND_LONG) { // #76 : COMMAND_LONG
+        } else if (msg_id == mavlink.MAVLINK_MSG_ID_COMMAND_LONG) { // #76 : COMMAND_LONG
             // if(authResult == 'done') {
             //     if (secPort.isOpen) {
             //         len = parseInt(mavPacket.substr(2, 2), 16);
@@ -677,9 +587,7 @@ function parseMavFromDrone(mavPacket) {
             //         secPort.write(message);
             //     }
             // }
-        }
-
-        else if (msg_id == mavlink.MAVLINK_MSG_ID_HEARTBEAT) { // #00 : HEARTBEAT
+        } else if (msg_id == mavlink.MAVLINK_MSG_ID_HEARTBEAT) { // #00 : HEARTBEAT
             if (ver == 'fd') {
                 base_offset = 20;
                 var custom_mode = mavPacket.substr(base_offset, 8).toLowerCase();
@@ -693,8 +601,7 @@ function parseMavFromDrone(mavPacket) {
                 var system_status = mavPacket.substr(base_offset, 2).toLowerCase();
                 base_offset += 2;
                 var mavlink_version = mavPacket.substr(base_offset, 2).toLowerCase();
-            }
-            else {
+            } else {
                 base_offset = 12;
                 custom_mode = mavPacket.substr(base_offset, 8).toLowerCase();
                 base_offset += 8;
@@ -720,42 +627,603 @@ function parseMavFromDrone(mavPacket) {
             muv_mqtt_client.publish(muv_pub_fc_hb_topic, JSON.stringify(fc.heartbeat));
 
             if (fc.heartbeat.base_mode & 0x80) {
-                if(flag_base_mode == 3) {
+                if (flag_base_mode == 3) {
+                    start_arm_time = moment();
                     flag_base_mode++;
                     my_sortie_name = moment().format('YYYY_MM_DD_T_HH_mm');
                     my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
                     sh_adn.crtct(my_parent_cnt_name + '?rcn=0', my_sortie_name, 0, function (rsc, res_body, count) {
                     });
+                    cal_flag = 1;
+                    cal_sortiename = my_sortie_name;
 
                     for (var idx in mission_parent) {
                         if (mission_parent.hasOwnProperty(idx)) {
                             setTimeout(createMissionContainer, 10, idx);
                         }
                     }
-                }
-                else {
+                } else {
                     flag_base_mode++;
-                    if(flag_base_mode > 16) {
+                    if (flag_base_mode > 16) {
                         flag_base_mode = 16;
                     }
                 }
-            }
-            else {
+            } else {
                 flag_base_mode = 0;
+                if (cal_flag == 1) {
+                    cal_flag = 0;
+                    calculateFlightTime(cal_sortiename);
+                }
                 my_sortie_name = 'disarm';
                 my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
             }
-
             //console.log(hb);
+        } else if (msg_id == mavlink.MAVLINK_MSG_ID_SYSTEM_TIME) { // #02 : SYSTEM_TIME
+            muv_mqtt_client.publish(muv_pub_fc_system_time_topic, mavPacket);
+        } else if (msg_id == mavlink.MAVLINK_MSG_ID_TIMESYNC) { // #111 : TIMESYNC
+            muv_mqtt_client.publish(muv_pub_fc_timesync_topic, mavPacket);
+        } else if (msg_id == mavlink.MAVLINK_MSG_ID_PARAM_VALUE) {
+            let param_value = 0;
+            let param_count = 0;
+            let param_index = 0;
+            let param_id = 0;
+            let param_type = 0;
+            if (ver == 'fd') {
+                base_offset = 20;
+                param_value = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                param_count = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                param_index = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                param_id = mavPacket.substr(base_offset, 32).toLowerCase();
+                base_offset += 32;
+                param_type = mavPacket.substr(base_offset, 2).toLowerCase();
+            } else {
+                base_offset = 12;
+                param_value = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                param_count = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                param_index = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                param_id = mavPacket.substr(base_offset, 32).toLowerCase();
+                base_offset += 32;
+                param_type = mavPacket.substr(base_offset, 2).toLowerCase();
+            }
+
+            param_id = Buffer.from(param_id, "hex").toString('ASCII');
+
+            if (param_id.includes('RC1_MIN')) {
+                //console.log(param_id);
+                if (!rc1_min.hasOwnProperty(sys_id)) {
+                    rc1_min[sys_id] = {};
+                }
+
+                rc1_min[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc1_min[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc1_min[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc1_min[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC1_MAX')) {
+                //console.log(param_id);
+                if (!rc1_max.hasOwnProperty(sys_id)) {
+                    rc1_max[sys_id] = {};
+                }
+
+                rc1_max[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc1_max[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc1_max[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc1_max[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC1_TRIM')) {
+                //console.log(param_id);
+                if (!rc1_trim.hasOwnProperty(sys_id)) {
+                    rc1_trim[sys_id] = {};
+                }
+
+                rc1_trim[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc1_trim[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc1_trim[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc1_trim[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC1_REVERSED')) {
+                if (!rc1_reversed.hasOwnProperty(sys_id)) {
+                    rc1_reversed[sys_id] = {};
+                }
+
+                rc1_reversed[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc1_reversed[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc1_reversed[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc1_reversed[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+                // console.log('\r\n+++++++++++++++++++++', rc1_reversed, '+++++++++++++++++++++\r\n');
+            } else if (param_id.includes('RC2_MIN')) {
+                //console.log(param_id);
+                if (!rc2_min.hasOwnProperty(sys_id)) {
+                    rc2_min[sys_id] = {};
+                }
+
+                rc2_min[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc2_min[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc2_min[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc2_min[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC2_MAX')) {
+                //console.log(param_id);
+                if (!rc2_max.hasOwnProperty(sys_id)) {
+                    rc2_max[sys_id] = {};
+                }
+
+                rc2_max[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc2_max[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc2_max[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc2_max[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC2_TRIM')) {
+                //console.log(param_id);
+                if (!rc2_trim.hasOwnProperty(sys_id)) {
+                    rc2_trim[sys_id] = {};
+                }
+
+                rc2_trim[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc2_trim[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc2_trim[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc2_trim[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC2_REVERSED')) {
+                if (!rc2_reversed.hasOwnProperty(sys_id)) {
+                    rc2_reversed[sys_id] = {};
+                }
+
+                rc2_reversed[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc2_reversed[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc2_reversed[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc2_reversed[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC3_MIN')) {
+                //console.log(param_id);
+                if (!rc3_min.hasOwnProperty(sys_id)) {
+                    rc3_min[sys_id] = {};
+                }
+
+                rc3_min[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc3_min[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc3_min[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc3_min[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC3_MAX')) {
+                //console.log(param_id);
+                if (!rc3_max.hasOwnProperty(sys_id)) {
+                    rc3_max[sys_id] = {};
+                }
+
+                rc3_max[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc3_max[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc3_max[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc3_max[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC3_TRIM')) {
+                //console.log(param_id);
+                if (!rc3_trim.hasOwnProperty(sys_id)) {
+                    rc3_trim[sys_id] = {};
+                }
+
+                rc3_trim[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc3_trim[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc3_trim[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc3_trim[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC3_REVERSED')) {
+                if (!rc3_reversed.hasOwnProperty(sys_id)) {
+                    rc3_reversed[sys_id] = {};
+                }
+
+                rc3_reversed[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc3_reversed[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc3_reversed[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc3_reversed[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC4_MIN')) {
+                //console.log(param_id);
+                if (!rc4_min.hasOwnProperty(sys_id)) {
+                    rc4_min[sys_id] = {};
+                }
+
+                rc4_min[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc4_min[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc4_min[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc4_min[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC4_MAX')) {
+                //console.log(param_id);
+                if (!rc4_max.hasOwnProperty(sys_id)) {
+                    rc4_max[sys_id] = {};
+                }
+
+                rc4_max[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc4_max[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc4_max[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc4_max[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC4_TRIM')) {
+                //console.log(param_id);
+                if (!rc4_trim.hasOwnProperty(sys_id)) {
+                    rc4_trim[sys_id] = {};
+                }
+
+                rc4_trim[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc4_trim[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc4_trim[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc4_trim[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC4_REVERSED')) {
+                if (!rc4_reversed.hasOwnProperty(sys_id)) {
+                    rc4_reversed[sys_id] = {};
+                }
+
+                rc4_reversed[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc4_reversed[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc4_reversed[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc4_reversed[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC5_MIN')) {
+                //console.log(param_id);
+                if (!rc5_min.hasOwnProperty(sys_id)) {
+                    rc5_min[sys_id] = {};
+                }
+
+                rc5_min[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc5_min[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc5_min[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc5_min[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC5_MAX')) {
+                //console.log(param_id);
+                if (!rc5_max.hasOwnProperty(sys_id)) {
+                    rc5_max[sys_id] = {};
+                }
+
+                rc5_max[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc5_max[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc5_max[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc5_max[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC5_TRIM')) {
+                //console.log(param_id);
+                if (!rc5_trim.hasOwnProperty(sys_id)) {
+                    rc5_trim[sys_id] = {};
+                }
+
+                rc5_trim[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc5_trim[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc5_trim[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc5_trim[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC6_MIN')) {
+                //console.log(param_id);
+                if (!rc6_min.hasOwnProperty(sys_id)) {
+                    rc6_min[sys_id] = {};
+                }
+
+                rc6_min[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc6_min[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc6_min[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc6_min[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC6_MAX')) {
+                //console.log(param_id);
+                if (!rc6_max.hasOwnProperty(sys_id)) {
+                    rc6_max[sys_id] = {};
+                }
+
+                rc6_max[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc6_max[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc6_max[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc6_max[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            } else if (param_id.includes('RC6_TRIM')) {
+                //console.log(param_id);
+                if (!rc6_trim.hasOwnProperty(sys_id)) {
+                    rc6_trim[sys_id] = {};
+                }
+
+                rc6_trim[sys_id].param_value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                rc6_trim[sys_id].param_type = Buffer.from(param_type, 'hex').readInt8(0);
+                rc6_trim[sys_id].param_count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                rc6_trim[sys_id].param_index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+            }
+            rc_map.rc1_max = rc1_max[sys_id].param_value;
+            rc_map.rc1_trim = rc1_trim[sys_id].param_value;
+            rc_map.rc1_min = rc1_min[sys_id].param_value;
+            rc_map.rc1_reversed = rc1_reversed[sys_id].param_value;
+            rc_map.rc2_max = rc2_max[sys_id].param_value;
+            rc_map.rc2_trim = rc2_trim[sys_id].param_value;
+            rc_map.rc2_min = rc2_min[sys_id].param_value;
+            rc_map.rc2_reversed = rc2_reversed[sys_id].param_value;
+            rc_map.rc3_max = rc3_max[sys_id].param_value;
+            rc_map.rc3_trim = rc3_trim[sys_id].param_value;
+            rc_map.rc3_min = rc3_min[sys_id].param_value;
+            rc_map.rc3_reversed = rc3_reversed[sys_id].param_value;
+            rc_map.rc4_max = rc4_max[sys_id].param_value;
+            rc_map.rc4_trim = rc4_trim[sys_id].param_value;
+            rc_map.rc4_min = rc4_min[sys_id].param_value;
+            rc_map.rc4_reversed = rc4_reversed[sys_id].param_value;
+            rc_map.rc5_max = rc5_max[sys_id].param_value;
+            rc_map.rc5_trim = rc5_trim[sys_id].param_value;
+            rc_map.rc5_min = rc5_min[sys_id].param_value;
+            rc_map.rc6_max = rc6_max[sys_id].param_value;
+            rc_map.rc6_trim = rc6_trim[sys_id].param_value;
+            rc_map.rc6_min = rc6_min[sys_id].param_value;
+
+        } else if (msg_id == mavlink.MAVLINK_MSG_ID_RC_CHANNELS) {
+            let target_system = '';
+            let chan1_raw = 0;
+            let chan2_raw = 0;
+            let chan3_raw = 0;
+            let chan4_raw = 0;
+            let chan5_raw = 0;
+            let chan6_raw = 0;
+            let chan7_raw = 0;
+            let chan8_raw = 0;
+            let chan9_raw = 0;
+            let chan10_raw = 0;
+            let chan11_raw = 0;
+            let chan12_raw = 0;
+            let chan13_raw = 0;
+            let chan14_raw = 0;
+            let chan15_raw = 0;
+            let chan16_raw = 0;
+            let chan17_raw = 0;
+            let chan18_raw = 0;
+            let rssi = 0;
+            if (ver == 'fd') {
+                base_offset = 20;
+                target_system = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                chan1_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan2_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan3_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan4_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan5_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan6_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan7_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan8_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan9_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan10_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan11_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan12_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan13_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan14_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan15_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan16_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan17_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan18_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+            } else {
+                base_offset = 12;
+                target_system = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                chan1_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan2_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan3_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan4_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan5_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan6_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan7_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan8_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan9_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan10_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan11_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan12_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan13_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan14_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan15_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan16_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan17_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                chan18_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+            }
+
+            chan1_raw = Buffer.from(chan1_raw, 'hex').readInt16LE(0);
+            rc_channel.chan1_raw = chan1_raw;
+            chan2_raw = Buffer.from(chan2_raw, 'hex').readInt16LE(0);
+            rc_channel.chan2_raw = chan2_raw;
+            chan3_raw = Buffer.from(chan3_raw, 'hex').readInt16LE(0);
+            rc_channel.chan3_raw = chan3_raw;
+            chan4_raw = Buffer.from(chan4_raw, 'hex').readInt16LE(0);
+            rc_channel.chan4_raw = chan4_raw;
+            chan5_raw = Buffer.from(chan5_raw, 'hex').readInt16LE(0);
+            rc_channel.chan5_raw = chan5_raw;
+            chan6_raw = Buffer.from(chan6_raw, 'hex').readInt16LE(0);
+            rc_channel.chan6_raw = chan6_raw;
+            chan7_raw = Buffer.from(chan7_raw, 'hex').readInt16LE(0);
+            rc_channel.chan7_raw = chan7_raw;
+            chan8_raw = Buffer.from(chan8_raw, 'hex').readInt16LE(0);
+            rc_channel.chan8_raw = chan8_raw;
+            chan9_raw = Buffer.from(chan9_raw, 'hex').readInt16LE(0);
+            rc_channel.chan9_raw = chan9_raw;
+            chan10_raw = Buffer.from(chan10_raw, 'hex').readInt16LE(0);
+            rc_channel.chan10_raw = chan10_raw;
+            chan11_raw = Buffer.from(chan11_raw, 'hex').readInt16LE(0);
+            rc_channel.chan11_raw = chan11_raw;
+            chan12_raw = Buffer.from(chan12_raw, 'hex').readInt16LE(0);
+            rc_channel.chan12_raw = chan12_raw;
+            chan13_raw = Buffer.from(chan13_raw, 'hex').readInt16LE(0);
+            rc_channel.chan13_raw = chan13_raw;
+            chan14_raw = Buffer.from(chan14_raw, 'hex').readInt16LE(0);
+            rc_channel.chan14_raw = chan14_raw;
+            chan15_raw = Buffer.from(chan15_raw, 'hex').readInt16LE(0);
+            rc_channel.chan15_raw = chan15_raw;
+            chan16_raw = Buffer.from(chan16_raw, 'hex').readInt16LE(0);
+            rc_channel.chan16_raw = chan16_raw;
+            chan17_raw = Buffer.from(chan17_raw, 'hex').readInt16LE(0);
+            rc_channel.chan17_raw = chan17_raw;
+            chan18_raw = Buffer.from(chan18_raw, 'hex').readInt16LE(0);
+            rc_channel.chan18_raw = chan18_raw;
+        } else if (msg_id === mavlink.MAVLINK_MSG_ID_ATTITUDE){
+            if (ver == 'fd') {
+                var base_offset = 20;
+                var time_boot_ms = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var roll = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var pitch = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var yaw = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var rollspeed = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var pitchspeed = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var yawspeed = mavPacket.substr(base_offset, 8).toLowerCase();
+            } else {
+                base_offset = 12;
+                time_boot_ms = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var roll = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var pitch = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var yaw = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var rollspeed = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var pitchspeed = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var yawspeed = mavPacket.substr(base_offset, 8).toLowerCase();
+            }
+
+            fc.attitude.time_boot_ms = Buffer.from(time_boot_ms, 'hex').readUInt32LE(0);
+            fc.attitude.roll = Buffer.from(roll, 'hex').readFloatLE(0);
+            fc.attitude.pitch = Buffer.from(pitch, 'hex').readFloatLE(0);
+            fc.attitude.yaw = Buffer.from(yaw, 'hex').readFloatLE(0);
+            fc.attitude.rollspeed = Buffer.from(rollspeed, 'hex').readFloatLE(0);
+            fc.attitude.pitchspeed = Buffer.from(pitchspeed, 'hex').readFloatLE(0);
+            fc.attitude.yawspeed = Buffer.from(yawspeed, 'hex').readFloatLE(0);
+
+            muv_mqtt_client.publish(muv_pub_fc_attitude_topic, JSON.stringify(fc.attitude));
+        } else if (msg_id === mavlink.MAVLINK_MSG_ID_BATTERY_STATUS){
+            console.log(mavPacket);
+            if (ver == 'fd') {
+                var base_offset = 20;
+                var id = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var battery_function = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                var type = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                var temperature = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                var voltages = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                var current_battery = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                var current_consumed = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var energy_consumed = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var battery_remaining = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var time_remaining = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                var charge_state = mavPacket.substr(base_offset, 4).toLowerCase();
+            } else {
+                base_offset = 12;
+                var id = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var battery_function = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                var type = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                var temperature = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                var voltages = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                var current_battery = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                var current_consumed = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var energy_consumed = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var battery_remaining = mavPacket.substr(base_offset, 8).toLowerCase();
+                base_offset += 8;
+                var time_remaining = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                var charge_state = mavPacket.substr(base_offset, 4).toLowerCase();
+            }
+
+            fc.battery_status.id = Buffer.from(id, 'hex').readUInt16LE(0);
+            fc.battery_status.battery_function = Buffer.from(battery_function, 'hex').readUInt16LE(0);
+            fc.battery_status.type = Buffer.from(type, 'hex').readUInt16LE(0);
+            fc.battery_status.temperature = Buffer.from(temperature, 'hex').readUInt16LE(0);
+            fc.battery_status.voltages = Buffer.from(voltages, 'hex').readUInt16LE(0);
+            fc.battery_status.current_battery = Buffer.from(current_battery, 'hex').readUInt16LE(0);
+            fc.battery_status.current_consumed = Buffer.from(current_consumed, 'hex').readInt32LE(0);
+            fc.battery_status.battery_remaining = Buffer.from(battery_remaining, 'hex').readInt32LE(0);
+            fc.battery_status.time_remaining = Buffer.from(time_remaining, 'hex').readUInt16LE(0);
+            fc.battery_status.charge_state = Buffer.from(charge_state, 'hex').readUInt16LE(0);
+
+            muv_mqtt_client.publish(muv_pub_fc_bat_state_topic, JSON.stringify(fc.battery_status));
         }
+    } catch (e) {
+        console.log('[parseMavFromDrone Error]', e.message);
     }
-    catch (e) {
-        console.log(e.message);
-    }
+}
+
+var end_arm_time = 0;
+var arming_time = 0;
+var flight_time = {};
+
+function calculateFlightTime(cal_sortiename) {
+    end_arm_time = moment();
+    arming_time = end_arm_time.diff(start_arm_time, 'second');
+    var sortie_name = cal_sortiename;
+    sh_adn.rtvct('/Mobius/Life_Prediction/History/' + conf.ae.name + '/la', 0, function (rsc, res_body, count) {
+        if (rsc == 2000) {
+            flight_time = res_body[Object.keys(res_body)[0]].con;
+            if (flight_time.total_flight_time == 0) {
+                flight_time.total_flight_time = arming_time;
+            } else {
+                flight_time.total_flight_time += arming_time;
+            }
+            flight_time.arming_time = arming_time;
+            flight_time.sortie_name = sortie_name;
+            console.log('Flight Time : ', flight_time);
+
+            sh_adn.crtci('/Mobius/Life_Prediction/History/' + conf.ae.name + '?rcn=0', 0, flight_time, null, function () {
+            });
+
+        } else {
+            sh_adn.crtct('/Mobius/Life_Prediction/History' + '?rcn=0', conf.ae.name, 0, function (rsc, res_body, count) {
+            });
+
+            flight_time.total_flight_time = arming_time;
+            flight_time.arming_time = arming_time;
+            flight_time.sortie_name = sortie_name;
+            console.log('Flight Time : ', flight_time);
+            sh_adn.crtci('/Mobius/Life_Prediction/History/' + conf.ae.name + '?rcn=0', 0, flight_time, null, function () {
+            });
+
+            console.log('x-m2m-rsc : ' + rsc + ' <----' + res_body);
+        }
+    });
+    cal_sortiename = '';
 }
 
 function createMissionContainer(idx) {
     var mission_parent_path = mission_parent[idx];
-    sh_adn.crtct(mission_parent_path+'?rcn=0', my_sortie_name, 0, function (rsc, res_body, count) {
+    sh_adn.crtct(mission_parent_path + '?rcn=0', my_sortie_name, 0, function (rsc, res_body, count) {
     });
 }
