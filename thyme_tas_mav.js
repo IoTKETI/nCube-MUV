@@ -1115,7 +1115,6 @@ function parseMavFromDrone(mavPacket) {
 
             muv_mqtt_client.publish(muv_pub_fc_attitude_topic, JSON.stringify(fc.attitude));
         } else if (msg_id === mavlink.MAVLINK_MSG_ID_BATTERY_STATUS){
-            console.log(mavPacket);
             if (ver == 'fd') {
                 var base_offset = 20;
                 var id = mavPacket.substr(base_offset, 8).toLowerCase();
