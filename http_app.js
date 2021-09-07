@@ -34,7 +34,7 @@ var tas_mav = require('./thyme_tas_mav');
 var HTTP_SUBSCRIPTION_ENABLE = 0;
 var MQTT_SUBSCRIPTION_ENABLE = 0;
 
-global.my_webrtc_room = '';
+global.my_control_type = '';
 global.my_rc_name = '';
 global.my_gcs_name = '';
 global.my_parent_cnt_name = '';
@@ -550,8 +550,8 @@ function retrieve_my_cnt_name(callback) {
                                     info.nu = 'mqtt://' + conf.cse.host + '/' + conf.ae.id + '?ct=json';
                                     conf.sub.push(JSON.parse(JSON.stringify(info)));
 
-                                    if (drone_info.hasOwnProperty('room')) {
-                                        my_webrtc_room = drone_info.room;
+                                    if (drone_info.hasOwnProperty('control_type')) {
+                                        my_control_type = drone_info.control_type;
                                     }
                                 }
                             }
