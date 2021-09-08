@@ -820,7 +820,7 @@ function parseMavFromDrone(mavPacket) {
             rc_channel.chan17_raw = chan17_raw;
             chan18_raw = Buffer.from(chan18_raw, 'hex').readInt16LE(0);
             rc_channel.chan18_raw = chan18_raw;
-        } else if (msg_id === mavlink.MAVLINK_MSG_ID_ATTITUDE){
+        } else if (msg_id === mavlink.MAVLINK_MSG_ID_ATTITUDE) {
             if (ver == 'fd') {
                 var base_offset = 20;
                 var time_boot_ms = mavPacket.substr(base_offset, 8).toLowerCase();
@@ -862,7 +862,7 @@ function parseMavFromDrone(mavPacket) {
             fc.attitude.yawspeed = Buffer.from(yawspeed, 'hex').readFloatLE(0);
 
             muv_mqtt_client.publish(muv_pub_fc_attitude_topic, JSON.stringify(fc.attitude));
-        } else if (msg_id === mavlink.MAVLINK_MSG_ID_BATTERY_STATUS){
+        } else if (msg_id === mavlink.MAVLINK_MSG_ID_BATTERY_STATUS) {
             if (ver == 'fd') {
                 var base_offset = 20;
                 var id = mavPacket.substr(base_offset, 8).toLowerCase();
