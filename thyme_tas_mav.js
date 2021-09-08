@@ -672,7 +672,7 @@ function parseMavFromDrone(mavPacket) {
             }
 
             param_id = Buffer.from(param_id, "hex").toString('ASCII').toLowerCase();
-            param_id = param_id.replace(/\0/g, '')
+            param_id = param_id.replace(/\0/g, '');
 
             if (param_id.substr(0, 2) === 'rc') {
                 rc_param[param_id] = {};
