@@ -57,7 +57,7 @@ exports.ready = function tas_ready() {
             });
         }
     } else if (my_drone_type === 'pixhawk') {
-        mavPortNum = 'COM14';
+        mavPortNum = '/dev/ttyAMA0';
         mavBaudrate = '115200';
         mavPortOpening();
     } else {
