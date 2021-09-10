@@ -306,21 +306,10 @@ function fork_msw(mission_name, directory_name) {
     });
 }
 
+let webrtc_conf = {};
+
 function run_webrtc(mission_name, directory_name) {
     var executable_name = directory_name.replace(mission_name + '_', '');
-
-    var webrtc_conf = {};
-    try {
-        webrtc_conf = JSON.parse(fs.readFileSync('./' + directory_name + '/webrtc_conf.json', 'utf8'));
-    } catch (e) {
-        webrtc_conf.gcs = drone_info.gcs;
-        webrtc_conf.drone = drone_info.drone;
-        webrtc_conf.directory_name = directory_name;
-        webrtc_conf.host = drone_info.host;
-        webrtc_conf.display_name = drone_info.drone.replace('_', '');
-        webrtc_conf.thismav_sysid = my_system_id;
-        fs.writeFileSync('./' + directory_name + '/webrtc_conf.json', JSON.stringify(webrtc_conf, null, 4), 'utf8');
-    }
 
     var nodeMsw = exec('sh ' + executable_name + '.sh', {cwd: process.cwd() + '/' + directory_name});
 
@@ -347,9 +336,10 @@ global.msw_directory = {};
 
 function requireMsw(mission_name, directory_name) {
     var require_msw_name = directory_name.replace(mission_name + '_', '');
+
     msw_directory[require_msw_name] = directory_name;
+
     if (require_msw_name == 'msw_webrtc') {
-        var webrtc_conf = {};
         try {
             webrtc_conf = JSON.parse(fs.readFileSync('webrtc_conf.json', 'utf8'));
         } catch (e) {
@@ -357,8 +347,6 @@ function requireMsw(mission_name, directory_name) {
             webrtc_conf.drone = drone_info.drone;
             webrtc_conf.directory_name = directory_name;
             webrtc_conf.host = drone_info.host;
-            webrtc_conf.display_name = drone_info.drone;
-            webrtc_conf.thismav_sysid = my_webrtc_room;
             fs.writeFileSync('webrtc_conf.json', JSON.stringify(webrtc_conf, null, 4), 'utf8');
         }
         // pm2 start msw_webrtc_msw_webrtc/msw_webrtc
