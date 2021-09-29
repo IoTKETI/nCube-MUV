@@ -1,0 +1,23 @@
+{
+  "name": "msw_sec_msw_sec",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IoTKETI/msw_sec.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/IoTKETI/msw_sec/issues"
+  },
+  "homepage": "https://github.com/IoTKETI/msw_sec#readme",
+  "dependencies": {
+    "tsc": "^2.0.3",
+    "typescript": "^4.4.3"
+  }
+}
