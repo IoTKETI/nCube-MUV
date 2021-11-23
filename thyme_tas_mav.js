@@ -703,7 +703,7 @@ function parseMavFromDrone(mavPacket) {
             let chan16_raw = 0;
             let chan17_raw = 0;
             let chan18_raw = 0;
-            let rssi = 0;
+            let rssi_raw = 0;
             if (ver == 'fd') {
                 base_offset = 20;
                 target_system = mavPacket.substr(base_offset, 8).toLowerCase();
@@ -743,6 +743,8 @@ function parseMavFromDrone(mavPacket) {
                 chan17_raw = mavPacket.substr(base_offset, 4).toLowerCase();
                 base_offset += 4;
                 chan18_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                rssi_raw = mavPacket.substr(base_offset, 4).toLowerCase();
             } else {
                 base_offset = 12;
                 target_system = mavPacket.substr(base_offset, 8).toLowerCase();
@@ -782,6 +784,8 @@ function parseMavFromDrone(mavPacket) {
                 chan17_raw = mavPacket.substr(base_offset, 4).toLowerCase();
                 base_offset += 4;
                 chan18_raw = mavPacket.substr(base_offset, 4).toLowerCase();
+                base_offset += 4;
+                rssi_raw = mavPacket.substr(base_offset, 4).toLowerCase();
             }
 
             chan1_raw = Buffer.from(chan1_raw, 'hex').readInt16LE(0);
@@ -820,6 +824,9 @@ function parseMavFromDrone(mavPacket) {
             rc_channel.chan17_raw = chan17_raw;
             chan18_raw = Buffer.from(chan18_raw, 'hex').readInt16LE(0);
             rc_channel.chan18_raw = chan18_raw;
+            rssi_raw = Buffer.from(rssi_raw, 'hex').readUInt8(0);
+            // console.log(mavPacket, '\nRC_CHANNELS -', rssi_raw);
+            rc_channel.rssi_raw = rssi_raw;
         } else if (msg_id === mavlink.MAVLINK_MSG_ID_ATTITUDE) {
             if (ver == 'fd') {
                 var base_offset = 20;
@@ -924,6 +931,9 @@ function parseMavFromDrone(mavPacket) {
 
             muv_mqtt_client.publish(muv_pub_fc_bat_state_topic, JSON.stringify(fc.battery_status));
         }
+        // else if (msg_id === mavlink.MAVLINK_MSG_ID_RADIO_STATUS) {
+        //     console.log('RADIO_STATUS -', mavPacket);
+        // }
     } catch (e) {
         console.log('[parseMavFromDrone Error]', e.message);
     }
