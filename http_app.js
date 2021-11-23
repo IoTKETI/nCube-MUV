@@ -27,6 +27,7 @@ var exec = require('child_process').exec;
 global.sh_adn = require('./http_adn');
 var noti = require('./noti');
 var tas_mav = require('./thyme_tas_mav');
+const shell = require("shelljs");
 //var tas_sec = require('./thyme_tas_sec');
 //var tas_mission = require('./thyme_tas_mission');
 
@@ -345,7 +346,7 @@ function requireMsw(mission_name, directory_name) {
         webrtc_conf.directory_name = directory_name;
         webrtc_conf.host = drone_info.host;
         fs.writeFileSync('webrtc_conf.json', JSON.stringify(webrtc_conf, null, 4), 'utf8');
-        
+
         // pm2 start msw_webrtc_msw_webrtc/msw_webrtc
         setTimeout(run_webrtc, 10, mission_name, directory_name);
 
@@ -434,6 +435,26 @@ function retrieve_my_cnt_name(callback) {
         if (rsc == 2000) {
             drone_info = res_body[Object.keys(res_body)[0]].con;
             //console.log(drone_info);
+
+            if (drone_info.hasOwnProperty('update')) {
+                if (drone_info.update === 'enable') {
+                    const shell = require('shelljs')
+
+                    if(shell.exec('git reset --hard HEAD').code !== 0) {
+                        shell.echo('Error: command failed')
+                        shell.exit(1)
+                    }
+                    else {
+                        if(shell.exec('git pull').code !== 0) {
+                            shell.echo('Error: command failed')
+                            shell.exit(1)
+                        }
+                        else {
+                            console.log('Finish update !');
+                        }
+                    }
+                }
+            }
 
             conf.sub = [];
             conf.cnt = [];
