@@ -10,6 +10,7 @@
     "moment": "^2.24.0",
     "mqtt": "^3.0.0",
     "serialport": "^9.0.1",
+    "shelljs": "^0.8.4",
     "shortid": "^2.2.15",
     "underscore": "^1.9.2"
   },
