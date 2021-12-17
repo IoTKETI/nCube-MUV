@@ -27,7 +27,6 @@ var exec = require('child_process').exec;
 global.sh_adn = require('./http_adn');
 var noti = require('./noti');
 var tas_mav = require('./thyme_tas_mav');
-const shell = require("shelljs");
 //var tas_sec = require('./thyme_tas_sec');
 //var tas_mission = require('./thyme_tas_mission');
 
@@ -338,7 +337,7 @@ global.msw_directory = {};
 function requireMsw(mission_name, directory_name) {
     var require_msw_name = directory_name.replace(mission_name + '_', '');
 
-    msw_directory[require_msw_name] = directory_name;
+    msw_directory[mission_name] = directory_name;
 
     if (require_msw_name == 'msw_webrtc') {
         webrtc_conf.gcs = drone_info.gcs;
