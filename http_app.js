@@ -896,12 +896,13 @@ function muv_mqtt_connect(broker_ip, port, noti_topic) {
         muv_mqtt_client.on('message', function (topic, message) {
             try {
                 if (topic.includes('msw_lte_rc_4')){
-                    // console.log(message.toString('hex'));
+                    console.log(message);
                     mavPort.write(message);
+                } else {
+                    var msg_obj = JSON.parse(message.toString());
+                    send_to_Mobius((topic), msg_obj, parseInt(Math.random() * 10));
+                    //console.log(topic + ' - ' + JSON.stringify(msg_obj));
                 }
-                var msg_obj = JSON.parse(message.toString());
-                send_to_Mobius((topic), msg_obj, parseInt(Math.random() * 10));
-                //console.log(topic + ' - ' + JSON.stringify(msg_obj));
             } catch (e) {
                 msg_obj = message.toString();
                 send_to_Mobius((topic), msg_obj, parseInt(Math.random() * 10));
