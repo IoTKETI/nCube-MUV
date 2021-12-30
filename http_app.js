@@ -840,7 +840,7 @@ function mqtt_connect(serverip, sub_gcs_topic, noti_topic) {
         });
 
         mqtt_client.on('error', function (err) {
-            console.log(err.message);
+            console.log('[mqtt_client error] ' + err.message);
         });
     }
 }
@@ -910,7 +910,7 @@ function muv_mqtt_connect(broker_ip, port, noti_topic) {
         });
 
         muv_mqtt_client.on('error', function (err) {
-            console.log(err.message);
+            console.log('[muv_mqtt_client error] ' + err.message);
         });
     }
 }
