@@ -896,8 +896,14 @@ function muv_mqtt_connect(broker_ip, port, noti_topic) {
         muv_mqtt_client.on('message', function (topic, message) {
             try {
                 if (topic.includes('msw_lte_rc_4')){
-                    console.log(message);
-                    mavPort.write(message);
+                    if (mavPort != null) {
+                        if (mavPort.isOpen) {
+                            console.log(message);
+                            mavPort.write(message);
+                        } else {
+                            console.log('mavPort is not opened');
+                        }
+                    }
                 } else {
                     var msg_obj = JSON.parse(message.toString());
                     send_to_Mobius((topic), msg_obj, parseInt(Math.random() * 10));
