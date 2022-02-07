@@ -77,7 +77,7 @@ function http_request(origin, path, method, ty, bodyString, callback) {
                     callback(res.headers['x-m2m-rsc'], jsonObj);
                 }
                 catch (e) {
-                    console.log('[http_adn] json parse error]');
+                    console.log('[http_adn] json parse error');
                     jsonObj = {};
                     jsonObj.dbg = res_body;
                     callback(9999, jsonObj);
@@ -273,7 +273,7 @@ exports.crtci = function(parent, count, content_obj, socket, callback) {
         results_ci['m2m:cin'].con = content_obj;
 
         bodyString = JSON.stringify(results_ci);
-        
+
         //console.log(bodyString);
     }
 

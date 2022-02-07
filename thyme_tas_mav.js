@@ -56,7 +56,7 @@ exports.ready = function tas_ready() {
                 // setTimeout(dji_sdk_launch, 1500);
             });
         }
-    } else if (my_drone_type === 'pixhawk') {
+    } else if ((my_drone_type === 'pixhawk') || (my_drone_type === 'ardupilot') || (my_drone_type === 'px4')) {
         mavPortNum = '/dev/ttyAMA0';
         mavBaudrate = '115200';
         mavPortOpening();
@@ -338,7 +338,7 @@ exports.gcs_noti_handler = function (message) {
         } else if (msg_command == 'm' || msg_command == 'a') {
             socket_mav.write(message);
         }
-    } else if (my_drone_type === 'pixhawk') {
+    } else if ((my_drone_type === 'pixhawk') || (my_drone_type === 'ardupilot') || (my_drone_type === 'px4')) {
         if (mavPort != null) {
             if (mavPort.isOpen) {
                 mavPort.write(message);

@@ -800,7 +800,7 @@ function mqtt_connect(serverip, sub_gcs_topic, noti_topic) {
         });
 
         mqtt_client.on('error', function (err) {
-            console.log(err.message);
+            console.log('[mqtt_client error] ' + err.message);
         });
     }
 }
@@ -856,12 +856,19 @@ function muv_mqtt_connect(broker_ip, port, noti_topic) {
         muv_mqtt_client.on('message', function (topic, message) {
             try {
                 if (topic.includes('msw_lte_rc_4')){
-                    // console.log(message.toString('hex'));
-                    mavPort.write(message);
+                    if (mavPort != null) {
+                        if (mavPort.isOpen) {
+                            console.log(message);
+                            mavPort.write(message);
+                        } else {
+                            console.log('mavPort is not opened');
+                        }
+                    }
+                } else {
+                    var msg_obj = JSON.parse(message.toString());
+                    send_to_Mobius((topic), msg_obj, parseInt(Math.random() * 10));
+                    //console.log(topic + ' - ' + JSON.stringify(msg_obj));
                 }
-                var msg_obj = JSON.parse(message.toString());
-                send_to_Mobius((topic), msg_obj, parseInt(Math.random() * 10));
-                //console.log(topic + ' - ' + JSON.stringify(msg_obj));
             } catch (e) {
                 msg_obj = message.toString();
                 send_to_Mobius((topic), msg_obj, parseInt(Math.random() * 10));
@@ -870,7 +877,7 @@ function muv_mqtt_connect(broker_ip, port, noti_topic) {
         });
 
         muv_mqtt_client.on('error', function (err) {
-            console.log(err.message);
+            console.log('[muv_mqtt_client error] ' + err.message);
         });
     }
 }

@@ -53,6 +53,7 @@ try {
     ae_name = JSON.parse(fs.readFileSync('flight.json', 'utf8'));
 }
 catch (e) {
+    console.log('can not find flight.json file');
     ae_name.approval_gcs = 'MUV';
     ae_name.flight = 'Dione';
     fs.writeFileSync('flight.json', JSON.stringify(ae_name, null, 4), 'utf8');
