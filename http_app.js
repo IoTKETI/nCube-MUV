@@ -176,7 +176,7 @@ function git_clone(mission_name, directory_name, repository_url) {
         console.log('exit: ' + code);
 
         //setTimeout(set_msw_config, 10, msw_name, directory_name);
-        setTimeout(requireMsw, 5000, mission_name, directory_name);
+        setTimeout(npm_install, 5000, mission_name, directory_name);
     });
 
     gitClone.on('error', function (code) {
@@ -206,7 +206,7 @@ function git_pull(mission_name, directory_name) {
             console.log('exit: ' + code);
 
             //setTimeout(set_msw_config, 10, msw_name, directory_name);
-            setTimeout(requireMsw, 1000, mission_name, directory_name);
+            setTimeout(npm_install, 1000, mission_name, directory_name);
         });
 
         gitPull.on('error', function (code) {
@@ -218,35 +218,6 @@ function git_pull(mission_name, directory_name) {
         console.log(e.message);
     }
 }
-
-/*
-var msw_config = {};
-function set_msw_config(msw_name, directory_name) {
-    try {
-        msw_config = JSON.parse(fs.readFileSync('./' + directory_name + '/config.json', 'utf8'));
-
-        msw_config.name = msw_name;
-        msw_config.gcs = drone_info.gcs;
-        msw_config.drone = drone_info.drone;
-
-        fs.writeFileSync('./' + directory_name + '/config.json', JSON.stringify(msw_config, null, 4), 'utf8');
-        console.log('update ./' + directory_name + '/config.json');
-
-        setTimeout(npm_install, 10, msw_name, directory_name);
-    }
-    catch (e) {
-        msw_config.name = msw_name;
-        msw_config.gcs = drone_info.gcs;
-        msw_config.drone = drone_info.drone;
-        msw_config.serialPortNum = '/dev/ttyUSB3';
-        msw_config.serialBaudrate = '57600';
-        fs.writeFileSync('./' + directory_name + '/config.json', JSON.stringify(msw_config, null, 4), 'utf8');
-        console.log('create ./' + directory_name + '/config.json');
-
-        setTimeout(npm_install, 10, msw_name, directory_name);
-    }
-}
-*/
 
 function npm_install(mission_name, directory_name) {
     try {
@@ -282,33 +253,31 @@ function npm_install(mission_name, directory_name) {
     }
 }
 
+// function fork_msw(mission_name, directory_name) {
+//     var executable_name = directory_name.replace(mission_name + '_', '');
+//
+//     var nodeMsw = spawn('node', [executable_name], {cwd: process.cwd() + '/' + directory_name});
+//
+//     nodeMsw.stdout.on('data', function (data) {
+//         console.log('stdout: ' + data);
+//     });
+//
+//     nodeMsw.stderr.on('data', function (data) {
+//         console.log('stderr: ' + data);
+//     });
+//
+//     nodeMsw.on('exit', function (code) {
+//         console.log('exit: ' + code);
+//     });
+//
+//     nodeMsw.on('error', function (code) {
+//         console.log('error: ' + code);
+//
+//         setTimeout(npm_install, 10, directory_name);
+//     });
+// }
+
 function fork_msw(mission_name, directory_name) {
-    var executable_name = directory_name.replace(mission_name + '_', '');
-
-    var nodeMsw = spawn('node', [executable_name], {cwd: process.cwd() + '/' + directory_name});
-
-    nodeMsw.stdout.on('data', function (data) {
-        console.log('stdout: ' + data);
-    });
-
-    nodeMsw.stderr.on('data', function (data) {
-        console.log('stderr: ' + data);
-    });
-
-    nodeMsw.on('exit', function (code) {
-        console.log('exit: ' + code);
-    });
-
-    nodeMsw.on('error', function (code) {
-        console.log('error: ' + code);
-
-        setTimeout(npm_install, 10, directory_name);
-    });
-}
-
-let webrtc_conf = {};
-
-function run_webrtc(mission_name, directory_name) {
     var executable_name = directory_name.replace(mission_name + '_', '');
 
     var nodeMsw = exec('sh ' + executable_name + '.sh', {cwd: process.cwd() + '/' + directory_name});
@@ -339,19 +308,7 @@ function requireMsw(mission_name, directory_name) {
 
     msw_directory[mission_name] = directory_name;
 
-    if (require_msw_name == 'msw_webrtc') {
-        webrtc_conf.gcs = drone_info.gcs;
-        webrtc_conf.drone = drone_info.drone;
-        webrtc_conf.directory_name = directory_name;
-        webrtc_conf.host = drone_info.host;
-        fs.writeFileSync('webrtc_conf.json', JSON.stringify(webrtc_conf, null, 4), 'utf8');
-
-        // pm2 start msw_webrtc_msw_webrtc/msw_webrtc
-        setTimeout(run_webrtc, 10, mission_name, directory_name);
-
-    } else {
-        require('./' + directory_name + '/' + require_msw_name);
-    }
+    setTimeout(run_webrtc, 10, mission_name, directory_name);
 }
 
 function ae_response_action(status, res_body, callback) {
@@ -631,6 +588,9 @@ function retrieve_my_cnt_name(callback) {
             MQTT_SUBSCRIPTION_ENABLE = 1;
             sh_state = 'crtae';
             setTimeout(http_watchdog, normal_interval);
+
+            fs.writeFileSync('drone_info.json', JSON.stringify(drone_info, null, 4), 'utf8');
+
             callback();
         } else {
             console.log('x-m2m-rsc : ' + rsc + ' <----' + res_body);
