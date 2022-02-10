@@ -589,6 +589,7 @@ function retrieve_my_cnt_name(callback) {
             sh_state = 'crtae';
             setTimeout(http_watchdog, normal_interval);
 
+            drone_info.id = conf.ae.name
             fs.writeFileSync('drone_info.json', JSON.stringify(drone_info, null, 4), 'utf8');
 
             callback();
