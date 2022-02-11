@@ -393,7 +393,7 @@ function retrieve_my_cnt_name(callback) {
             //console.log(drone_info);
 
             if (drone_info.hasOwnProperty('update')) {
-                if (drone_info.update === 'enable') {
+                if (drone_info.update === 'enable' || drone_info.update === 'nCube') {
                     const shell = require('shelljs')
 
                     if(shell.exec('git reset --hard HEAD').code !== 0) {
