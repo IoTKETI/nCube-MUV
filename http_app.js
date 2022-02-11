@@ -787,16 +787,16 @@ function mqtt_connect(serverip, sub_gcs_topic, noti_topic) {
             if (topic == sub_gcs_topic) {
                 tas_mav.gcs_noti_handler(message);
             } else {
-                if (topic.includes('/oneM2M/req/')) {
-                    var jsonObj = JSON.parse(message.toString());
-
-                    if (jsonObj['m2m:rqp'] == null) {
-                        jsonObj['m2m:rqp'] = jsonObj;
-                    }
-
-                    noti.mqtt_noti_action(topic.split('/'), jsonObj);
-                } else {
-                }
+                // if (topic.includes('/oneM2M/req/')) {
+                //     var jsonObj = JSON.parse(message.toString());
+                //
+                //     if (jsonObj['m2m:rqp'] == null) {
+                //         jsonObj['m2m:rqp'] = jsonObj;
+                //     }
+                //
+                //     noti.mqtt_noti_action(topic.split('/'), jsonObj);
+                // } else {
+                // }
             }
         });
 
