@@ -16,6 +16,6 @@ elif [ $OS = "buster" ];then
   sudo wget http://repo.mosquitto.org/debian/mosquitto-buster.list 
   sudo apt-get update
   sudo apt-get install -y mosquitto
-else
+elif [ $OS = "bionic" ];then
   sudo apt-get install -y mosquitto
 fi
