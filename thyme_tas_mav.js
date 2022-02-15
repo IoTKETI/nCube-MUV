@@ -17,6 +17,7 @@ var net = require('net');
 var ip = require('ip');
 var moment = require('moment');
 var fs = require('fs');
+const {exec} = require('child_process');
 
 var mavlink = require('./mavlibrary/mavlink.js');
 
@@ -57,8 +58,22 @@ exports.ready = function tas_ready() {
             });
         }
     } else if ((my_drone_type === 'pixhawk') || (my_drone_type === 'ardupilot') || (my_drone_type === 'px4')) {
-        mavPortNum = '/dev/ttyAMA0';
-        mavBaudrate = '115200';
+        exec("cat /etc/*release* | grep -w ID | cut -d '=' -f 2", (error, stdout, stderr) => {
+            if (error) {  // Windows
+                console.error(`exec error: ${error}`);
+                mavPortNum = 'COM3';
+                mavBaudrate = '115200';
+            }
+            if (stdout === "raspbian\n") {  // CROW
+                mavPortNum = '/dev/ttyAMA0';
+                mavBaudrate = '115200';
+            } else if (stdout === "bionic\n") {  // KEA
+                mavPortNum = '/dev/ttyTHS0';
+                mavBaudrate = '115200';
+            } else {
+                console.log('OS is', stdout);
+            }
+        });
         mavPortOpening();
     } else {
     }

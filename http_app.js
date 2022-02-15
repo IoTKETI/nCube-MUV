@@ -592,6 +592,22 @@ function retrieve_my_cnt_name(callback) {
             drone_info.id = conf.ae.name
             fs.writeFileSync('drone_info.json', JSON.stringify(drone_info, null, 4), 'utf8');
 
+            exec("cat /etc/*release* | grep -w ID | cut -d '=' -f 2", (error, stdout, stderr) => {
+                if (error) {  // Windows
+                    console.error(`exec error: ${error}`);
+                    return;
+                }
+                if (stdout === "bionic\n") {  // KEA
+                    exec("sudo gpasswd --add ${USER} dialout"), (error, stdout, stderr) => {
+                        if (error) {  // Windows
+                            console.error(`exec error: ${error}`);
+                            return;
+                        }
+                        console.log(stdout);
+                    }
+                }
+            });
+
             callback();
         } else {
             console.log('x-m2m-rsc : ' + rsc + ' <----' + res_body);
