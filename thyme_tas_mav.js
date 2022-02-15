@@ -61,19 +61,21 @@ exports.ready = function tas_ready() {
         exec("cat /etc/*release* | grep -w VERSION_CODENAME | cut -d '=' -f 2", (error, stdout, stderr) => {
             if (error) {  // Windows
                 console.error(`exec error: ${error}`);
-                mavPortNum = 'COM3';
-                mavBaudrate = '115200';
+                PortNum = 'COM3';
+                Baudrate = '115200';
             }
             if (stdout === "raspbian\n") {  // CROW
-                mavPortNum = '/dev/ttyAMA0';
-                mavBaudrate = '115200';
+                PortNum = '/dev/ttyAMA0';
+                Baudrate = '115200';
             } else if (stdout === "bionic\n") {  // KEA
-                mavPortNum = '/dev/ttyTHS0';
-                mavBaudrate = '115200';
+                PortNum = '/dev/ttyTHS0';
+                Baudrate = '115200';
             } else {
                 console.log('OS is', stdout);
             }
         });
+        mavPortNum = PortNum;
+        mavBaudrate = Baudrate;
         mavPortOpening();
     } else {
     }
