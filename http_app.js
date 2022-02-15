@@ -393,13 +393,12 @@ function retrieve_my_cnt_name(callback) {
                     return;
                 }
                 if (stdout === "bionic\n") {  // KEA
-                    exec("sudo chmod 777 /dev/ttyTHS0"), (error, stdout, stderr) => {
+                    exec("sudo chmod 777 /dev/ttyTHS0", (error, stdout, stderr) => {
                         if (error) {  // Windows
                             console.error(`exec error: ${error}`);
                             return;
                         }
-                        console.log(stdout);
-                    }
+                    });
                 }
             });
     sh_adn.rtvct('/Mobius/' + conf.ae.approval_gcs + '/approval/' + conf.ae.name + '/la', 0, function (rsc, res_body, count) {
