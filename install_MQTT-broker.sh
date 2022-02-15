@@ -1,6 +1,6 @@
 #!/usr/bin/sh
 
-OS = $(cat /etc/*release* | grep -w PRETTY_NAME | cut -d '(' -f 2 | cut -d ')' -f 1)
+OS = $(cat /etc/*release* | grep -w VERSION_CODENAME)
 
 if [ $OS = "bullseye" ];then
   wget http://repo.mosquitto.org/debian/mosquitto-repo.gpg.key
