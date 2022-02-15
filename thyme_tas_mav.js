@@ -58,27 +58,23 @@ exports.ready = function tas_ready() {
             });
         }
     } else if ((my_drone_type === 'pixhawk') || (my_drone_type === 'ardupilot') || (my_drone_type === 'px4')) {
-        let PortNum = '/dev/ttyAMA0';
-        let Baudrate = '115200';
         exec("cat /etc/*release* | grep -w VERSION_CODENAME | cut -d '=' -f 2", (error, stdout, stderr) => {
             if (error) {  // Windows
                 console.error(`exec error: ${error}`);
-                PortNum = 'COM3';
-                Baudrate = '115200';
+                mavPortNum = 'COM3';
+                mavBaudrate = '115200';
             }
             if (stdout === "raspbian\n") {  // CROW
-                PortNum = '/dev/ttyAMA0';
-                Baudrate = '115200';
+                mavPortNum = '/dev/ttyAMA0';
+                mavBaudrate = '115200';
             } else if (stdout === "bionic\n") {  // KEA
-                PortNum = '/dev/ttyTHS0';
-                Baudrate = '115200';
+                mavPortNum = '/dev/ttyTHS0';
+                mavBaudrate = '115200';
             } else {
                 console.log('OS is', stdout);
             }
+            mavPortOpening();
         });
-        mavPortNum = PortNum;
-        mavBaudrate = Baudrate;
-        mavPortOpening();
     } else {
     }
 };
