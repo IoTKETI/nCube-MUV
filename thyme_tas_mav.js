@@ -58,9 +58,9 @@ exports.ready = function tas_ready() {
             });
         }
     } else if ((my_drone_type === 'pixhawk') || (my_drone_type === 'ardupilot') || (my_drone_type === 'px4')) {
+        let PortNum = '/dev/ttyAMA0';
+        let Baudrate = '115200';
         exec("cat /etc/*release* | grep -w VERSION_CODENAME | cut -d '=' -f 2", (error, stdout, stderr) => {
-            let PortNum = '/dev/ttyAMA0';
-            let Baudrate = '115200';
             if (error) {  // Windows
                 console.error(`exec error: ${error}`);
                 PortNum = 'COM3';
