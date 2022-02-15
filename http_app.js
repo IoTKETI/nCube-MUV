@@ -592,7 +592,7 @@ function retrieve_my_cnt_name(callback) {
             drone_info.id = conf.ae.name
             fs.writeFileSync('drone_info.json', JSON.stringify(drone_info, null, 4), 'utf8');
 
-            exec("cat /etc/*release* | grep -w ID | cut -d '=' -f 2", (error, stdout, stderr) => {
+            exec("cat /etc/*release* | grep -w VERSION_CODENAME | cut -d '=' -f 2", (error, stdout, stderr) => {
                 if (error) {  // Windows
                     console.error(`exec error: ${error}`);
                     return;
