@@ -58,7 +58,7 @@ exports.ready = function tas_ready() {
             });
         }
     } else if ((my_drone_type === 'pixhawk') || (my_drone_type === 'ardupilot') || (my_drone_type === 'px4')) {
-        exec("cat /etc/*release* | grep -w VERSION_CODENAME | cut -d '=' -f 2", (error, stdout, stderr) => {
+        exec("cat /etc/*release* | grep -w ID | cut -d '=' -f 2", (error, stdout, stderr) => {
             if (error) {  // Windows
                 console.error(`exec error: ${error}`);
                 mavPortNum = 'COM3';

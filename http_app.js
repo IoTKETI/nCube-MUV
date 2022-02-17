@@ -387,13 +387,13 @@ global.drone_info = {};
 global.mission_parent = [];
 
 function retrieve_my_cnt_name(callback) {
-    exec("cat /etc/*release* | grep -w VERSION_CODENAME | cut -d '=' -f 2", (error, stdout, stderr) => {
+    exec("cat /etc/*release* | grep -w ID | cut -d '=' -f 2", (error, stdout, stderr) => {
         if (error) {  // Windows
             console.error(`exec error: ${error}`);
             return;
         }
         if (stdout === "bionic\n") {  // KEA
-            exec(sudo chmod 777 /dev/ttyTHS0", (error, stdout, stderr) => {
+            exec("echo '123456' | sudo chmod 777 /dev/ttyTHS0", (error, stdout, stderr) => {
                 if (error) {  // Windows
                     console.error(`exec error: ${error}`);
                     return;
