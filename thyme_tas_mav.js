@@ -67,7 +67,7 @@ exports.ready = function tas_ready() {
             if (stdout === "raspbian\n") {  // CROW
                 mavPortNum = '/dev/ttyAMA0';
                 mavBaudrate = '115200';
-            } else if (stdout === "bionic\n") {  // KEA
+            } else if (stdout === "ubuntu\n") {  // KEA
                 mavPortNum = '/dev/ttyTHS0';
                 mavBaudrate = '115200';
             } else {
