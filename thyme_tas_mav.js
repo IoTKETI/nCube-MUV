@@ -207,7 +207,7 @@ function sendDroneMessage(type, params) {
             // console.log('msg: ', msg);
             // console.log('msg_seq : ', msg.slice(2,3));
             //mqtt_client.publish(my_cnt_name, msg.toString('hex'));
-            //_this.send_aggr_to_Mobius(my_cnt_name, msg.toString('hex'), 1500);
+            //_this.send_aggr_to_Mobius(my_cnt_name, msg.toString('hex'), 2000);
             mavPortData(msg);
         }
     } catch (ex) {
@@ -443,8 +443,6 @@ function mavPortData(data) {
         if(!mavVersionCheckFlag) {
             var stx = mavStrFromDrone.substr(0, 2);
             if(stx === 'fe') {
-                // console.log(mavStrFromDrone)
-
                 var len = parseInt(mavStrFromDrone.substr(2, 2), 16);
                 var mavLength = (6 * 2) + (len * 2) + (2 * 2);
                 var sysid = parseInt(mavStrFromDrone.substr(6, 2), 16);
@@ -461,10 +459,8 @@ function mavPortData(data) {
                     var mavPacket = mavStrFromDrone.substr(0, mavLength);
                     console.log(mavPacket)
 
-                    //if(mavStrFromDroneLength > 0) {
                     mavStrFromDrone = mavStrFromDrone.substr(mavLength);
                     mavStrFromDroneLength = 0;
-                    //}
                 }
                 else {
                     break;
@@ -477,20 +473,18 @@ function mavPortData(data) {
                 sysid = parseInt(mavStrFromDrone.substr(10, 2), 16);
                 msgid = parseInt(mavStrFromDrone.substr(18, 2)+mavStrFromDrone.substr(16, 2)+mavStrFromDrone.substr(14, 2), 16);
                 console.log(len)
-                console.log(mavStrFromDrone.substr(18, 2), mavStrFromDrone.substr(16, 2), mavStrFromDrone.substr(14, 2))
                 console.log(msgid)
+
                 if(msgid === 0 && len === 9) { // HEARTBEAT
                     mavVersionCheckFlag = true;
                     mavVersion = 'v2';
                 }
-                if ((mavStrFromDrone.length) >= mavLength) {
-                    var mavPacket = mavStrFromDrone.substr(0, mavLength);
+                if (mavStrFromDrone.length >= mavLength) {
+                    mavPacket = mavStrFromDrone.substr(0, mavLength);
                     console.log(mavPacket)
 
-                    //if(mavStrFromDroneLength > 0) {
                     mavStrFromDrone = mavStrFromDrone.substr(mavLength);
                     mavStrFromDroneLength = 0;
-                    //}
                 }
                 else {
                     break;
@@ -507,38 +501,39 @@ function mavPortData(data) {
                 mavLength = (6 * 2) + (len * 2) + (2 * 2);
 
                 if ((mavStrFromDrone.length) >= mavLength) {
-                    var mavPacket = mavStrFromDrone.substr(0, mavLength);
+                    mavPacket = mavStrFromDrone.substr(0, mavLength);
+
                     mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
-                    send_aggr_to_Mobius(my_cnt_name, mavPacket, 1500);
+                    send_aggr_to_Mobius(my_cnt_name, mavPacket, 2000);
                     setTimeout(parseMavFromDrone, 0, mavPacket);
 
-                    //if(mavStrFromDroneLength > 0) {
                     mavStrFromDrone = mavStrFromDrone.substr(mavLength);
                     mavStrFromDroneLength = 0;
-                    //}
-                } else {
+                }
+                else {
                     break;
                 }
-            } else if (mavVersion === 'v2' && stx === 'fd') {
+            }
+            else if (mavVersion === 'v2' && stx === 'fd') {
                 len = parseInt(mavStrFromDrone.substr(2, 2), 16);
                 mavLength = (10 * 2) + (len * 2) + (2 * 2);
 
-                if ((mavStrFromDrone.length) >= mavLength) {
+                if (mavStrFromDrone.length >= mavLength) {
                     mavPacket = mavStrFromDrone.substr(0, mavLength);
+
                     mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
-                    send_aggr_to_Mobius(my_cnt_name, mavPacket, 1500);
+                    send_aggr_to_Mobius(my_cnt_name, mavPacket, 2000);
                     setTimeout(parseMavFromDrone, 0, mavPacket);
 
-                    //if(mavStrFromDroneLength > 0) {
                     mavStrFromDrone = mavStrFromDrone.substr(mavLength);
                     mavStrFromDroneLength = 0;
-                    //}
-                } else {
+                }
+                else {
                     break;
                 }
-            } else {
+            }
+            else {
                 mavStrFromDrone = mavStrFromDrone.substr(2);
-                //console.log(mavStrFromDrone);
             }
         }
     }
