@@ -58,23 +58,27 @@ exports.ready = function tas_ready() {
             });
         }
     } else if ((my_drone_type === 'pixhawk') || (my_drone_type === 'ardupilot') || (my_drone_type === 'px4')) {
-        exec("cat /etc/*release* | grep -w ID | cut -d '=' -f 2", (error, stdout, stderr) => {
-            if (error) {  // Windows
-                console.error(`exec error: ${error}`);
-                mavPortNum = 'COM3';
-                mavBaudrate = '115200';
-            }
-            if (stdout === "raspbian\n") {  // CROW
-                mavPortNum = '/dev/ttyAMA0';
-                mavBaudrate = '115200';
-            } else if (stdout === "ubuntu\n") {  // KEA
-                mavPortNum = '/dev/ttyTHS0';
-                mavBaudrate = '115200';
-            } else {
-                console.log('OS is', stdout);
-            }
-            mavPortOpening();
-        });
+        // exec("cat /etc/*release* | grep -w ID | cut -d '=' -f 2", (error, stdout, stderr) => {
+        //     if (error) {  // Windows
+        //         console.error(`exec error: ${error}`);
+        //         mavPortNum = 'COM21';
+        //         mavBaudrate = '115200';
+        //     }
+        //     if (stdout === "raspbian\n") {  // CROW
+        //         mavPortNum = '/dev/ttyAMA0';
+        //         mavBaudrate = '115200';
+        //     } else if (stdout === "ubuntu\n") {  // KEA
+        //         mavPortNum = '/dev/ttyTHS0';
+        //         mavBaudrate = '115200';
+        //     } else {
+        //         console.log('OS is', stdout);
+        //     }
+        //     mavPortOpening();
+        // });
+        mavPortNum = 'COM18';
+        mavBaudrate = '115200';
+        mavPortOpening();
+
     } else {
     }
 };
@@ -433,18 +437,37 @@ var mavVersionCheckFlag = false;
 
 function mavPortData(data) {
     mavStrFromDrone += data.toString('hex').toLowerCase();
+    // console.log(mavStrFromDrone)
+
     while (mavStrFromDrone.length > 20) {
         if(!mavVersionCheckFlag) {
             var stx = mavStrFromDrone.substr(0, 2);
             if(stx === 'fe') {
+                // console.log(mavStrFromDrone)
+
                 var len = parseInt(mavStrFromDrone.substr(2, 2), 16);
                 var mavLength = (6 * 2) + (len * 2) + (2 * 2);
                 var sysid = parseInt(mavStrFromDrone.substr(6, 2), 16);
                 var msgid = parseInt(mavStrFromDrone.substr(10, 2), 16);
+                console.log(len)
+                console.log(msgid)
 
                 if(msgid === 0 && len === 9) { // HEARTBEAT
                     mavVersionCheckFlag = true;
-                    mavVersionCheckFlag = 'v1';
+                    mavVersion = 'v1';
+                }
+
+                if ((mavStrFromDrone.length) >= mavLength) {
+                    var mavPacket = mavStrFromDrone.substr(0, mavLength);
+                    console.log(mavPacket)
+
+                    //if(mavStrFromDroneLength > 0) {
+                    mavStrFromDrone = mavStrFromDrone.substr(mavLength);
+                    mavStrFromDroneLength = 0;
+                    //}
+                }
+                else {
+                    break;
                 }
             }
             else if(stx === 'fd') {
@@ -452,11 +475,25 @@ function mavPortData(data) {
                 mavLength = (10 * 2) + (len * 2) + (2 * 2);
 
                 sysid = parseInt(mavStrFromDrone.substr(10, 2), 16);
-                msgid = parseInt(mavStrFromDrone.substr(14, 6), 16);
-
+                msgid = parseInt(mavStrFromDrone.substr(18, 2)+mavStrFromDrone.substr(16, 2)+mavStrFromDrone.substr(14, 2), 16);
+                console.log(len)
+                console.log(mavStrFromDrone.substr(18, 2), mavStrFromDrone.substr(16, 2), mavStrFromDrone.substr(14, 2))
+                console.log(msgid)
                 if(msgid === 0 && len === 9) { // HEARTBEAT
                     mavVersionCheckFlag = true;
-                    mavVersionCheckFlag = 'v2';
+                    mavVersion = 'v2';
+                }
+                if ((mavStrFromDrone.length) >= mavLength) {
+                    var mavPacket = mavStrFromDrone.substr(0, mavLength);
+                    console.log(mavPacket)
+
+                    //if(mavStrFromDroneLength > 0) {
+                    mavStrFromDrone = mavStrFromDrone.substr(mavLength);
+                    mavStrFromDroneLength = 0;
+                    //}
+                }
+                else {
+                    break;
                 }
             }
             else {
@@ -548,7 +585,8 @@ function parseMavFromDrone(mavPacket) {
         var ver = mavPacket.substr(0, 2);
         if (ver == 'fd') {
             var sysid = mavPacket.substr(10, 2).toLowerCase();
-            var msgid = mavPacket.substr(14, 6).toLowerCase();
+            //var msgid = mavPacket.substr(14, 6).toLowerCase();
+            var msgid = mavPacket.substr(18, 2)+mavPacket.substr(16, 2)+mavPacket.substr(14, 2);
         } else {
             sysid = mavPacket.substr(6, 2).toLowerCase();
             msgid = mavPacket.substr(10, 2).toLowerCase();
