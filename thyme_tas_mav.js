@@ -428,31 +428,81 @@ function hex(arrayBuffer) {
 
 var mavStrFromDrone = '';
 var mavStrFromDroneLength = 0;
+var mavVersion = 'unknown';
+var mavVersionCheckFlag = false;
 
 function mavPortData(data) {
     mavStrFromDrone += data.toString('hex').toLowerCase();
-    while (mavStrFromDrone.length > 12) {
-        var stx = mavStrFromDrone.substr(0, 2);
-        if (stx === 'fe') {
-            var len = parseInt(mavStrFromDrone.substr(2, 2), 16);
-            var mavLength = (6 * 2) + (len * 2) + (2 * 2);
+    while (mavStrFromDrone.length > 20) {
+        if(!mavVersionCheckFlag) {
+            var stx = mavStrFromDrone.substr(0, 2);
+            if(stx === 'fe') {
+                var len = parseInt(mavStrFromDrone.substr(2, 2), 16);
+                var mavLength = (6 * 2) + (len * 2) + (2 * 2);
+                var sysid = parseInt(mavStrFromDrone.substr(6, 2), 16);
+                var msgid = parseInt(mavStrFromDrone.substr(10, 2), 16);
 
-            if ((mavStrFromDrone.length) >= mavLength) {
-                var mavPacket = mavStrFromDrone.substr(0, mavLength);
-                mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
-                send_aggr_to_Mobius(my_cnt_name, mavPacket, 1500);
-                setTimeout(parseMavFromDrone, 0, mavPacket);
-
-                //if(mavStrFromDroneLength > 0) {
-                mavStrFromDrone = mavStrFromDrone.substr(mavLength);
-                mavStrFromDroneLength = 0;
-                //}
-            } else {
-                break;
+                if(msgid === 0 && len === 9) { // HEARTBEAT
+                    mavVersionCheckFlag = true;
+                    mavVersionCheckFlag = 'v1';
+                }
             }
-        } else {
-            mavStrFromDrone = mavStrFromDrone.substr(2);
-            //console.log(mavStrFromDrone);
+            else if(stx === 'fd') {
+                len = parseInt(mavStrFromDrone.substr(2, 2), 16);
+                mavLength = (10 * 2) + (len * 2) + (2 * 2);
+
+                sysid = parseInt(mavStrFromDrone.substr(10, 2), 16);
+                msgid = parseInt(mavStrFromDrone.substr(14, 6), 16);
+
+                if(msgid === 0 && len === 9) { // HEARTBEAT
+                    mavVersionCheckFlag = true;
+                    mavVersionCheckFlag = 'v2';
+                }
+            }
+            else {
+                mavStrFromDrone = mavStrFromDrone.substr(2);
+            }
+        }
+        else {
+            stx = mavStrFromDrone.substr(0, 2);
+            if (mavVersion === 'v1' && stx === 'fe') {
+                len = parseInt(mavStrFromDrone.substr(2, 2), 16);
+                mavLength = (6 * 2) + (len * 2) + (2 * 2);
+
+                if ((mavStrFromDrone.length) >= mavLength) {
+                    var mavPacket = mavStrFromDrone.substr(0, mavLength);
+                    mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
+                    send_aggr_to_Mobius(my_cnt_name, mavPacket, 1500);
+                    setTimeout(parseMavFromDrone, 0, mavPacket);
+
+                    //if(mavStrFromDroneLength > 0) {
+                    mavStrFromDrone = mavStrFromDrone.substr(mavLength);
+                    mavStrFromDroneLength = 0;
+                    //}
+                } else {
+                    break;
+                }
+            } else if (mavVersion === 'v2' && stx === 'fd') {
+                len = parseInt(mavStrFromDrone.substr(2, 2), 16);
+                mavLength = (10 * 2) + (len * 2) + (2 * 2);
+
+                if ((mavStrFromDrone.length) >= mavLength) {
+                    mavPacket = mavStrFromDrone.substr(0, mavLength);
+                    mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
+                    send_aggr_to_Mobius(my_cnt_name, mavPacket, 1500);
+                    setTimeout(parseMavFromDrone, 0, mavPacket);
+
+                    //if(mavStrFromDroneLength > 0) {
+                    mavStrFromDrone = mavStrFromDrone.substr(mavLength);
+                    mavStrFromDroneLength = 0;
+                    //}
+                } else {
+                    break;
+                }
+            } else {
+                mavStrFromDrone = mavStrFromDrone.substr(2);
+                //console.log(mavStrFromDrone);
+            }
         }
     }
 }
