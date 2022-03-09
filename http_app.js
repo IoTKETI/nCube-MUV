@@ -389,13 +389,11 @@ global.mission_parent = [];
 function retrieve_my_cnt_name(callback) {
     exec("cat /etc/*release* | grep -w ID | cut -d '=' -f 2", (error, stdout, stderr) => {
         if (error) {  // Windows
-            console.error(`exec error: ${error}`);
             return;
         }
         if (stdout === "ubuntu\n") {  // KEA
             exec("echo '123456' | sudo -S chmod 777 /dev/ttyTHS0", (error, stdout, stderr) => {
                 if (error) {  // Windows
-                    console.error(`exec error: ${error}`);
                     return;
                 }
             });
