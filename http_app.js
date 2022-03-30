@@ -387,18 +387,6 @@ global.drone_info = {};
 global.mission_parent = [];
 
 function retrieve_my_cnt_name(callback) {
-    exec("cat /etc/*release* | grep -w ID | cut -d '=' -f 2", (error, stdout, stderr) => {
-        if (error) {  // Windows
-            return;
-        }
-        if (stdout === "ubuntu\n") {  // KEA
-            exec("echo '123456' | sudo -S chmod 777 /dev/ttyTHS0", (error, stdout, stderr) => {
-                if (error) {  // Windows
-                    return;
-                }
-            });
-        }
-    });
     sh_adn.rtvct('/Mobius/' + conf.ae.approval_gcs + '/approval/' + conf.ae.name + '/la', 0, function (rsc, res_body, count) {
         if (rsc == 2000) {
             drone_info = res_body[Object.keys(res_body)[0]].con;
