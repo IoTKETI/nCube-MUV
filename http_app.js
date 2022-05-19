@@ -151,7 +151,7 @@ function ready_for_notification() {
         }
         mqtt_connect(conf.cse.host, muv_sub_gcs_topic, noti_topic);
 
-        muv_mqtt_connect('localhost', 1883, muv_sub_msw_topic);
+        muv_mqtt_connect('localhost', 1883, muv_sub_msw_topic, muv_sub_gcs_topic);
     }
 }
 
@@ -396,16 +396,14 @@ function retrieve_my_cnt_name(callback) {
                 if (drone_info.update === 'enable' || drone_info.update === 'nCube') {
                     const shell = require('shelljs')
 
-                    if(shell.exec('git reset --hard HEAD').code !== 0) {
+                    if (shell.exec('git reset --hard HEAD').code !== 0) {
                         shell.echo('Error: command failed')
                         shell.exit(1)
-                    }
-                    else {
-                        if(shell.exec('git pull').code !== 0) {
+                    } else {
+                        if (shell.exec('git pull').code !== 0) {
                             shell.echo('Error: command failed')
                             shell.exit(1)
-                        }
-                        else {
+                        } else {
                             console.log('Finish update !');
                         }
                     }
@@ -489,7 +487,7 @@ function retrieve_my_cnt_name(callback) {
                                         info = {};
                                         info.parent = '/Mobius/' + drone_info.gcs + '/Mission_Data/' + drone_info.drone + '/' + mission_name + '/' + container_name;
                                         info.name = 'sub_msw';
-                                        info.nu = 'mqtt://' + conf.cse.host + '/' + drone_info.mission[mission_name][chk_cnt][idx].split(':')[1] +'?ct=json';
+                                        info.nu = 'mqtt://' + conf.cse.host + '/' + drone_info.mission[mission_name][chk_cnt][idx].split(':')[1] + '?ct=json';
                                         conf.sub.push(JSON.parse(JSON.stringify(info)));
                                     }
                                 }
@@ -776,11 +774,6 @@ function mqtt_connect(serverip, sub_gcs_topic, noti_topic) {
                     console.log('[mqtt_connect] noti_topic is subscribed:  ' + noti_topic);
                 });
             }
-            if (req_rc_topic !== '') {
-                mqtt_client.publish(req_rc_topic, drone_info.drone, function (){
-                    console.log('[mqtt_connect] send my_drone_name to nCube-RC [' + my_rc_name + '] :  ' + drone_info.drone);
-                });
-            }
         });
 
         mqtt_client.on('message', function (topic, message) {
@@ -806,7 +799,7 @@ function mqtt_connect(serverip, sub_gcs_topic, noti_topic) {
     }
 }
 
-function muv_mqtt_connect(broker_ip, port, noti_topic) {
+function muv_mqtt_connect(broker_ip, port, noti_topic, sub_gcs_topic) {
     if (muv_mqtt_client == null) {
         if (conf.usesecure === 'disable') {
             var connectOptions = {
@@ -846,6 +839,12 @@ function muv_mqtt_connect(broker_ip, port, noti_topic) {
 
         muv_mqtt_client.on('connect', function () {
             console.log('muv_mqtt connected to ' + broker_ip);
+            if (sub_gcs_topic != '') {
+                muv_mqtt_client.subscribe(sub_gcs_topic, function () {
+                    console.log('[muv_mqtt_connect] sub_gcs_topic is subscribed: ' + sub_gcs_topic);
+                });
+            }
+
             for (var idx in noti_topic) {
                 if (noti_topic.hasOwnProperty(idx)) {
                     muv_mqtt_client.subscribe(noti_topic[idx]);
@@ -856,15 +855,8 @@ function muv_mqtt_connect(broker_ip, port, noti_topic) {
 
         muv_mqtt_client.on('message', function (topic, message) {
             try {
-                if (topic.includes('msw_lte_rc_4')){
-                    if (mavPort != null) {
-                        if (mavPort.isOpen) {
-                            console.log(message);
-                            mavPort.write(message);
-                        } else {
-                            console.log('mavPort is not opened');
-                        }
-                    }
+                if (topic === sub_gcs_topic) {
+                    tas_mav.gcs_noti_handler(message);
                 } else {
                     var msg_obj = JSON.parse(message.toString());
                     send_to_Mobius((topic), msg_obj, parseInt(Math.random() * 10));
