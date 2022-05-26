@@ -8,12 +8,16 @@ let gimbalBaudrate = gimbal.baudrate;
 const unit = 0.02197265625;
 let strFromGimbal = '';
 
+gimbalPortOpening();
+
 function gimbalPortOpening() {
+    console.log('2222222222222222222222222222222222222222222222222');
     if (gimbalPort == null) {
         gimbalPort = new SerialPort(gimbalPortNum, {
             baudRate: parseInt(gimbalBaudrate, 10),
         });
 
+        
         gimbalPort.on('open', gimbalPortOpen);
         gimbalPort.on('close', gimbalPortClose);
         gimbalPort.on('error', gimbalPortError);
@@ -92,7 +96,7 @@ function gimbalPortData(data) {
             GimbalStatus.roll = rollStatorRelAngle;
             // console.log('rollImuAngle: ', rollImuAngle);
             // console.log('rollRcTargetAngle: ', rollRcTargetAngle);
-            console.log('rollStatorRelAngle: ', rollStatorRelAngle);
+            // console.log('rollStatorRelAngle: ', rollStatorRelAngle);
 
             pitchImuAngle = Buffer.from(pitchImuAngle, 'hex').readInt16LE() * unit;
             pitchRcTargetAngle = Buffer.from(pitchRcTargetAngle, 'hex').readInt16LE() * unit;
@@ -100,7 +104,7 @@ function gimbalPortData(data) {
             GimbalStatus.pitch = pitchStatorRelAngle;
             // console.log('pitchImuAngle: ', pitchImuAngle);
             // console.log('pitchRcTargetAngle: ', pitchRcTargetAngle);
-            console.log('pitchStatorRelAngle: ', pitchStatorRelAngle);
+            // console.log('pitchStatorRelAngle: ', pitchStatorRelAngle);
 
             yawImuAngle = Buffer.from(yawImuAngle, 'hex').readInt16LE() * unit;
             yawRcTargetAngle = Buffer.from(yawRcTargetAngle, 'hex').readInt16LE() * unit;
@@ -108,10 +112,10 @@ function gimbalPortData(data) {
             GimbalStatus.yaw = yawStatorRelAngle;
             // console.log('yawImuAngle: ', yawImuAngle);
             // console.log('yawRcTargetAngle: ', yawRcTargetAngle);
-            console.log('yawStatorRelAngle: ', yawStatorRelAngle);
+            // console.log('yawStatorRelAngle: ', yawStatorRelAngle);
 
-            mqtt_client.publish(my_cnt_name, Buffer.from(JSON.stringify(GimbalStatus)));
-            sh_adn.crtci(my_cnt_name + '?rcn=0', 0, GimbalStatus, null, function () {
+            mqtt_client.publish(my_gimbal_name, Buffer.from(JSON.stringify(GimbalStatus)));
+            sh_adn.crtci(my_gimbal_name + '?rcn=0', 0, GimbalStatus, null, function () {
             });
 
             GimbalStatus = {};
@@ -122,4 +126,4 @@ function gimbalPortData(data) {
     }
 }
 
-gimbalPortOpening()
+
