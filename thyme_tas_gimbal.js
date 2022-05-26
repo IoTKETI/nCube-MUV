@@ -43,7 +43,7 @@ function gimbalPortSend() {
         setTimeout(gimbalPortOpening, 2000);
     }
 }
-setInterval(gimbalPortSend, 300);
+setInterval(gimbalPortSend, 100);
 
 function gimbalPortOpen() {
     console.log('gimbalPort open. ' + gimbalPortNum + ' Data rate: ' + gimbalBaudrate);
@@ -66,65 +66,66 @@ let GimbalStatus = {};
 function gimbalPortData(data) {
     strFromGimbal += data.toString('hex').toLowerCase();
 
-    while (strFromGimbal.length >= 118) {
+    while (strFromGimbal.length >= 200) {
         let index = 8;
         let header = strFromGimbal.substring(0, index);
 
         if (header === '3e3d3673') {
             let strFromGimbal_arr = strFromGimbal.split(header);
-            let HexdataFromGimbal = header + strFromGimbal_arr[1];
-            // console.log('HexdataFromGimbal -', HexdataFromGimbal);
+            if (strFromGimbal_arr[1].length === 110) {
+                let HexdataFromGimbal = header + strFromGimbal_arr[1];
+                // console.log('HexdataFromGimbal -', HexdataFromGimbal);
 
-            let roll = HexdataFromGimbal.substring(index, index + 36);
-            index += 36;
-            let pitch = HexdataFromGimbal.substring(index, index + 36);
-            index += 36;
-            let yaw = HexdataFromGimbal.substring(index, index + 36);
-            try {
-                let rollImuAngle = roll.substring(0, 4);
-                let rollRcTargetAngle = roll.substring(4, 8);
-                let rollStatorRelAngle = roll.substring(8, 16);
+                let roll = HexdataFromGimbal.substring(index, index + 36);
+                index += 36;
+                let pitch = HexdataFromGimbal.substring(index, index + 36);
+                index += 36;
+                let yaw = HexdataFromGimbal.substring(index, index + 36);
+                try {
+                    let rollImuAngle = roll.substring(0, 4);
+                    let rollRcTargetAngle = roll.substring(4, 8);
+                    let rollStatorRelAngle = roll.substring(8, 16);
 
-                let pitchImuAngle = pitch.substring(0, 4);
-                let pitchRcTargetAngle = pitch.substring(4, 8);
-                let pitchStatorRelAngle = pitch.substring(8, 16);
+                    let pitchImuAngle = pitch.substring(0, 4);
+                    let pitchRcTargetAngle = pitch.substring(4, 8);
+                    let pitchStatorRelAngle = pitch.substring(8, 16);
 
-                let yawImuAngle = yaw.substring(0, 4);
-                let yawRcTargetAngle = yaw.substring(4, 8);
-                let yawStatorRelAngle = yaw.substring(8, 16);
+                    let yawImuAngle = yaw.substring(0, 4);
+                    let yawRcTargetAngle = yaw.substring(4, 8);
+                    let yawStatorRelAngle = yaw.substring(8, 16);
 
-                rollImuAngle = Buffer.from(rollImuAngle, 'hex').readInt16LE() * unit;
-                rollRcTargetAngle = Buffer.from(rollRcTargetAngle, 'hex').readInt16LE() * unit;
-                rollStatorRelAngle = Buffer.from(rollStatorRelAngle, 'hex').readInt32LE() * unit;
-                GimbalStatus.roll = rollStatorRelAngle;
-                // console.log('rollImuAngle: ', rollImuAngle);
-                // console.log('rollRcTargetAngle: ', rollRcTargetAngle);
-                // console.log('rollStatorRelAngle: ', rollStatorRelAngle);
+                    rollImuAngle = Buffer.from(rollImuAngle, 'hex').readInt16LE() * unit;
+                    rollRcTargetAngle = Buffer.from(rollRcTargetAngle, 'hex').readInt16LE() * unit;
+                    rollStatorRelAngle = Buffer.from(rollStatorRelAngle, 'hex').readInt32LE() * unit;
+                    GimbalStatus.roll = rollStatorRelAngle;
+                    // console.log('rollImuAngle: ', rollImuAngle);
+                    // console.log('rollRcTargetAngle: ', rollRcTargetAngle);
+                    // console.log('rollStatorRelAngle: ', rollStatorRelAngle);
 
-                pitchImuAngle = Buffer.from(pitchImuAngle, 'hex').readInt16LE() * unit;
-                pitchRcTargetAngle = Buffer.from(pitchRcTargetAngle, 'hex').readInt16LE() * unit;
-                pitchStatorRelAngle = Buffer.from(pitchStatorRelAngle, 'hex').readInt32LE() * unit;
-                GimbalStatus.pitch = pitchStatorRelAngle;
-                // console.log('pitchImuAngle: ', pitchImuAngle);
-                // console.log('pitchRcTargetAngle: ', pitchRcTargetAngle);
-                // console.log('pitchStatorRelAngle: ', pitchStatorRelAngle);
+                    pitchImuAngle = Buffer.from(pitchImuAngle, 'hex').readInt16LE() * unit;
+                    pitchRcTargetAngle = Buffer.from(pitchRcTargetAngle, 'hex').readInt16LE() * unit;
+                    pitchStatorRelAngle = Buffer.from(pitchStatorRelAngle, 'hex').readInt32LE() * unit;
+                    GimbalStatus.pitch = pitchStatorRelAngle;
+                    // console.log('pitchImuAngle: ', pitchImuAngle);
+                    // console.log('pitchRcTargetAngle: ', pitchRcTargetAngle);
+                    // console.log('pitchStatorRelAngle: ', pitchStatorRelAngle);
 
-                yawImuAngle = Buffer.from(yawImuAngle, 'hex').readInt16LE() * unit;
-                yawRcTargetAngle = Buffer.from(yawRcTargetAngle, 'hex').readInt16LE() * unit;
-                yawStatorRelAngle = Buffer.from(yawStatorRelAngle, 'hex').readInt32LE() * unit;
-                GimbalStatus.yaw = yawStatorRelAngle;
-                // console.log('yawImuAngle: ', yawImuAngle);
-                // console.log('yawRcTargetAngle: ', yawRcTargetAngle);
-                // console.log('yawStatorRelAngle: ', yawStatorRelAngle);
+                    yawImuAngle = Buffer.from(yawImuAngle, 'hex').readInt16LE() * unit;
+                    yawRcTargetAngle = Buffer.from(yawRcTargetAngle, 'hex').readInt16LE() * unit;
+                    yawStatorRelAngle = Buffer.from(yawStatorRelAngle, 'hex').readInt32LE() * unit;
+                    GimbalStatus.yaw = yawStatorRelAngle;
+                    // console.log('yawImuAngle: ', yawImuAngle);
+                    // console.log('yawRcTargetAngle: ', yawRcTargetAngle);
+                    // console.log('yawStatorRelAngle: ', yawStatorRelAngle);
 
-                mqtt_client.publish(my_gimbal_name, Buffer.from(JSON.stringify(GimbalStatus)));
-                sh_adn.crtci(my_gimbal_name + '?rcn=0', 0, GimbalStatus, null, function () {
-                });
+                    mqtt_client.publish(my_gimbal_name, Buffer.from(JSON.stringify(GimbalStatus)));
+                    sh_adn.crtci(my_gimbal_name + '?rcn=0', 0, GimbalStatus, null, function () {
+                    });
+                }
+                catch (e) {
+                    console.log(e);
+                }
             }
-            catch(e) {
-                console.log(e);
-            }
-
             // console.log('data: ', strFromGimbal);
             GimbalStatus = {};
             if (strFromGimbal.split(header).length > 2) {
@@ -132,6 +133,7 @@ function gimbalPortData(data) {
             } else {
                 strFromGimbal = '';
             }
+
         } else {
             strFromGimbal = strFromGimbal.substr(2);
         }
