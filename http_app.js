@@ -43,10 +43,13 @@ global.pre_my_cnt_name = '';
 global.my_mission_parent = '';
 global.my_mission_name = '';
 global.my_sortie_name = 'disarm';
+global.my_gimbal_parent = '';
+global.my_gimbal_name = '';
 
 global.my_drone_type = 'pixhawk';
 global.my_secure = 'off';
 global.my_system_id = 8;
+global.gimbal = {};
 
 global.Req_auth = '';
 global.Res_auth = '';
@@ -80,6 +83,7 @@ global.muv_pub_fc_attitude_topic = '';
 global.muv_pub_fc_bat_state_topic = '';
 global.muv_pub_fc_system_time_topic = '';
 global.muv_pub_fc_timesync_topic = '';
+global.muv_pub_fc_wp_yaw_behavior_topic = '';
 
 global.getType = function (p) {
     var type = 'string';
@@ -551,7 +555,7 @@ function retrieve_my_cnt_name(callback) {
             if (drone_info.hasOwnProperty('mav_ver')) {
                 mav_ver = drone_info.mav_ver;
             } else {
-                mav_ver = 1;
+                mav_ver = 'v1';
             }
 
             if (drone_info.hasOwnProperty('type')) {
@@ -576,13 +580,43 @@ function retrieve_my_cnt_name(callback) {
                 my_system_id = 8;
             }
 
+            if (drone_info.hasOwnProperty('gimbal')) {
+                gimbal.type = drone_info.gimbal.type;
+                gimbal.portnum = drone_info.gimbal.portnum;
+                gimbal.baudrate = drone_info.gimbal.baudrate;
+            } else {
+                gimbal.type = 'viewpro';
+                gimbal.portnum = '/dev/ttyAMA1';
+                gimbal.baudrate = 115200;
+            }
+
+            // set container for gimbal
+            var info = {};
+            info.parent = '/Mobius/' + drone_info.gcs;
+            info.name = 'Gimbal_Data';
+            conf.cnt.push(JSON.parse(JSON.stringify(info)));
+
+            info = {};
+            info.parent = '/Mobius/' + drone_info.gcs + '/Gimbal_Data';
+            info.name = drone_info.drone;
+            conf.cnt.push(JSON.parse(JSON.stringify(info)));
+
+            info.parent = '/Mobius/' + drone_info.gcs + '/Gimbal_Data/' + drone_info.drone;
+            info.name = my_sortie_name;
+            conf.cnt.push(JSON.parse(JSON.stringify(info)));
+
+            my_gimbal_parent = info.parent;
+            my_gimbal_name = my_gimbal_parent + '/' + info.name;
+
             muv_pub_fc_gpi_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/global_position_int';
             muv_pub_fc_hb_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/heartbeat';
             muv_pub_fc_system_time_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/system_time';
             muv_pub_fc_timesync_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/timesync';
             muv_pub_fc_attitude_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/attitude';
             muv_pub_fc_bat_state_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/battery_status';
+            muv_pub_fc_wp_yaw_behavior_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/wp_yaw_behavior';
             muv_sub_gcs_topic = '/Mobius/' + my_gcs_name + '/GCS_Data/' + drone_info.drone;
+
             MQTT_SUBSCRIPTION_ENABLE = 1;
             sh_state = 'crtae';
             setTimeout(http_watchdog, normal_interval);
@@ -702,6 +736,9 @@ function http_watchdog() {
                     tas_mav.ready();
                     // tas_sec.ready();
                     // tas_mission.ready();
+                    if (gimbal.hasOwnProperty('type')) {
+                        require('thyme_tas_gimbal');
+                    }
 
                     setTimeout(http_watchdog, normal_interval);
                 }

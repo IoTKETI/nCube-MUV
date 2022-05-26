@@ -518,6 +518,13 @@ try {
     fc.global_position_int.vz = 0;
     fc.global_position_int.hdg = 65535;
 
+    fc.wp_yaw_behavior = {};
+    fc.wp_yaw_behavior.value = 0;
+    fc.wp_yaw_behavior.count = 0;
+    fc.wp_yaw_behavior.index = 0;
+    fc.wp_yaw_behavior.id = 0;
+    fc.wp_yaw_behavior.type = 0;
+
     fs.writeFileSync('fc_data_model.json', JSON.stringify(fc, null, 4), 'utf8');
 }
 
@@ -619,6 +626,28 @@ function parseMavFromDrone(mavPacket) {
             muv_mqtt_client.publish(muv_pub_fc_system_time_topic, mavPacket);
         } else if (msg_id == mavlink.MAVLINK_MSG_ID_TIMESYNC) { // #111 : TIMESYNC
             muv_mqtt_client.publish(muv_pub_fc_timesync_topic, mavPacket);
+        } else if (msg_id == mavlink.MAVLINK_MSG_ID_PARAM_VALUE) {
+            let param_value = mavPacket.substr(base_offset, 8).toLowerCase();
+            base_offset += 8;
+            let param_count = mavPacket.substr(base_offset, 4).toLowerCase();
+            base_offset += 4;
+            let param_index = mavPacket.substr(base_offset, 4).toLowerCase();
+            base_offset += 4;
+            let param_id = mavPacket.substr(base_offset, 32).toLowerCase();
+            base_offset += 32;
+            let param_type = mavPacket.substr(base_offset, 2).toLowerCase();
+
+            fc.wp_yaw_behavior.id = Buffer.from(param_id, "hex").toString('ASCII').toLowerCase();
+            fc.wp_yaw_behavior.id = fc.wp_yaw_behavior.id.replace(/\0/g, '');
+
+            if (fc.wp_yaw_behavior.id === 'wp_yaw_behavior') {
+                fc.wp_yaw_behavior.value = Buffer.from(param_value, 'hex').readFloatLE(0);
+                fc.wp_yaw_behavior.type = Buffer.from(param_type, 'hex').readInt8(0);
+                fc.wp_yaw_behavior.count = Buffer.from(param_count, 'hex').readInt16LE(0);
+                fc.wp_yaw_behavior.index = Buffer.from(param_index, 'hex').readUInt16LE(0);
+
+                muv_mqtt_client.publish(muv_pub_fc_wp_yaw_behavior_topic, JSON.stringify(fc.wp_yaw_behavior));
+            }
         }
     } catch (e) {
         console.log('[parseMavFromDrone Error]', e);
