@@ -584,10 +584,6 @@ function retrieve_my_cnt_name(callback) {
                 gimbal.type = drone_info.gimbal.type;
                 gimbal.portnum = drone_info.gimbal.portnum;
                 gimbal.baudrate = drone_info.gimbal.baudrate;
-            } else {
-                gimbal.type = 'viewpro';
-                gimbal.portnum = '/dev/ttyAMA1';
-                gimbal.baudrate = 115200;
             }
 
             // set container for gimbal
