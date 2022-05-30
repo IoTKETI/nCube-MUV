@@ -733,7 +733,9 @@ function http_watchdog() {
                     // tas_sec.ready();
                     // tas_mission.ready();
                     if (gimbal.hasOwnProperty('type')) {
-                        require('./thyme_tas_gimbal');
+                        setTimeout(() => {
+                            require('./thyme_tas_gimbal')
+                        }, 500);
                     }
 
                     setTimeout(http_watchdog, normal_interval);
