@@ -602,11 +602,11 @@ function parseMavFromDrone(mavPacket) {
                     cal_flag = 1;
                     cal_sortiename = my_sortie_name;
 
-                    for (var idx in mission_parent) {
-                        if (mission_parent.hasOwnProperty(idx)) {
-                            setTimeout(createMissionContainer, 10, idx);
-                        }
-                    }
+                    // for (var idx in mission_parent) {
+                    //     if (mission_parent.hasOwnProperty(idx)) {
+                    //         setTimeout(createMissionContainer, 10, idx);
+                    //     }
+                    // }
                 } else {
                     flag_base_mode++;
                     if (flag_base_mode > 16) {
