@@ -23,13 +23,14 @@ var shortid = require('shortid');
 var moment = require('moment');
 var spawn = require('child_process').spawn;
 var exec = require('child_process').exec;
+const os = require("os");
+const dgram = require("dgram");
 
 global.sh_adn = require('./http_adn');
 var noti = require('./noti');
 var tas_mav = require('./thyme_tas_mav');
 //var tas_sec = require('./thyme_tas_sec');
 //var tas_mission = require('./thyme_tas_mission');
-
 
 var HTTP_SUBSCRIPTION_ENABLE = 0;
 var MQTT_SUBSCRIPTION_ENABLE = 0;
@@ -49,7 +50,12 @@ global.my_gimbal_name = '';
 global.my_drone_type = 'pixhawk';
 global.my_secure = 'off';
 global.my_system_id = 8;
+
 global.gimbal = {};
+
+global.rf_udp = {};
+global.rf_udp_used = 'disable';
+global.UDP_client = null;
 
 global.Req_auth = '';
 global.Res_auth = '';
@@ -63,19 +69,11 @@ global.authResult = 'yet';
 
 var app = express();
 
-//app.use(bodyParser.urlencoded({ extended: true }));
-//app.use(bodyParser.json());
-//app.use(bodyParser.json({ type: 'application/*+json' }));
-//app.use(bodyParser.text({ type: 'application/*+xml' }));
-
-// ?????? ????????.
 var server = null;
 var noti_topic = '';
 var muv_sub_gcs_topic = '';
 
 var muv_sub_msw_topic = [];
-
-let req_rc_topic = '';
 
 global.muv_pub_fc_gpi_topic = '';
 global.muv_pub_fc_hb_topic = '';
@@ -179,7 +177,6 @@ function git_clone(mission_name, directory_name, repository_url) {
     gitClone.on('exit', function (code) {
         console.log('exit: ' + code);
 
-        //setTimeout(set_msw_config, 10, msw_name, directory_name);
         setTimeout(npm_install, 5000, mission_name, directory_name);
     });
 
@@ -209,7 +206,6 @@ function git_pull(mission_name, directory_name) {
         gitPull.on('exit', function (code) {
             console.log('exit: ' + code);
 
-            //setTimeout(set_msw_config, 10, msw_name, directory_name);
             setTimeout(npm_install, 1000, mission_name, directory_name);
         });
 
@@ -305,15 +301,15 @@ function fork_msw(mission_name, directory_name) {
     });
 }
 
-global.msw_directory = {};
-
-function requireMsw(mission_name, directory_name) {
-    var require_msw_name = directory_name.replace(mission_name + '_', '');
-
-    msw_directory[mission_name] = directory_name;
-
-    setTimeout(run_webrtc, 10, mission_name, directory_name);
-}
+// global.msw_directory = {};
+//
+// function requireMsw(mission_name, directory_name) {
+//     var require_msw_name = directory_name.replace(mission_name + '_', '');
+//
+//     msw_directory[mission_name] = directory_name;
+//
+//     setTimeout(run_webrtc, 10, mission_name, directory_name);
+// }
 
 function ae_response_action(status, res_body, callback) {
     var aeid = res_body['m2m:ae']['aei'];
@@ -586,6 +582,17 @@ function retrieve_my_cnt_name(callback) {
                 gimbal.baudrate = drone_info.gimbal.baudrate;
             }
 
+            if (drone_info.hasOwnProperty('rf')) {
+                if (drone_info.rf.hasOwnProperty('udp')) {
+                    rf_udp_used = 'enable';
+                    rf_udp.host = drone_info.rf.udp.addr;
+                    rf_udp.port = drone_info.rf.udp.port;
+
+                    setIPandRoute(rf_udp.host);
+                    udp_connect(rf_udp.host, rf_udp.port);
+                }
+            }
+
             // set container for gimbal
             var info = {};
             info.parent = '/Mobius/' + drone_info.gcs;
@@ -617,7 +624,7 @@ function retrieve_my_cnt_name(callback) {
             sh_state = 'crtae';
             setTimeout(http_watchdog, normal_interval);
 
-            drone_info.id = conf.ae.name
+            drone_info.id = conf.ae.name;
             fs.writeFileSync('drone_info.json', JSON.stringify(drone_info, null, 4), 'utf8');
 
             callback();
@@ -749,13 +756,10 @@ function http_watchdog() {
 
 setTimeout(http_watchdog, normal_interval);
 
-function check_rtv_cnt() {
-    sh_state = 'rtvct';
-    http_watchdog();
-}
-
-// for notification
-//var xmlParser = bodyParser.text({ type: '*/*' });
+// function check_rtv_cnt() {
+//     sh_state = 'rtvct';
+//     http_watchdog();
+// }
 
 function mqtt_connect(serverip, sub_gcs_topic, noti_topic) {
     if (mqtt_client == null) {
@@ -763,11 +767,8 @@ function mqtt_connect(serverip, sub_gcs_topic, noti_topic) {
             var connectOptions = {
                 host: serverip,
                 port: conf.cse.mqttport,
-//              username: 'keti',
-//              password: 'keti123',
                 protocol: "mqtt",
                 keepalive: 10,
-//              clientId: serverUID,
                 protocolId: "MQTT",
                 protocolVersion: 4,
                 clean: true,
@@ -781,7 +782,6 @@ function mqtt_connect(serverip, sub_gcs_topic, noti_topic) {
                 port: conf.cse.mqttport,
                 protocol: "mqtts",
                 keepalive: 10,
-//              clientId: serverUID,
                 protocolId: "MQTT",
                 protocolVersion: 4,
                 clean: true,
@@ -840,11 +840,8 @@ function muv_mqtt_connect(broker_ip, port, noti_topic, sub_gcs_topic) {
             var connectOptions = {
                 host: broker_ip,
                 port: port,
-//              username: 'keti',
-//              password: 'keti123',
                 protocol: "mqtt",
                 keepalive: 10,
-//              clientId: serverUID,
                 protocolId: "MQTT",
                 protocolVersion: 4,
                 clean: true,
@@ -858,7 +855,6 @@ function muv_mqtt_connect(broker_ip, port, noti_topic, sub_gcs_topic) {
                 port: port,
                 protocol: "mqtts",
                 keepalive: 10,
-//              clientId: serverUID,
                 protocolId: "MQTT",
                 protocolVersion: 4,
                 clean: true,
@@ -916,4 +912,79 @@ function send_to_Mobius(topic, content_each_obj, gap) {
 
         });
     }, gap, topic, content_each_obj);
+}
+
+function setIPandRoute(host) {
+    let host_arr = host.split('.');
+    let setIPRoute = spawn('sh', ['./setIPandRoute.sh', host_arr[0], host_arr[1]]);
+
+    setIPRoute.stdout.on('data', function (data) {
+        console.log('stdout: ' + data);
+    });
+
+    setIPRoute.stderr.on('data', function (data) {
+        console.log('stderr: ' + data);
+    });
+
+    setIPRoute.on('exit', function (code) {
+        console.log('exit: ' + code);
+        if (code === 0) {
+            var networkInterfaces = os.networkInterfaces();
+            if (networkInterfaces.hasOwnProperty('eth0')) {
+                console.log(networkInterfaces['eth0'][0].address);
+                if (networkInterfaces['eth0'][0].address !== '192.168.' + host_arr[0] + '.' + host_arr[1]) {
+                    exec('sudo ifconfig eth0 192.168.' + host_arr[0] + '.' + host_arr[1], (error, stdout, stderr) => {
+                        if (error) {
+                            console.error(`exec error: ${error}`);
+                            return;
+                        }
+                        console.log(`stdout: ${stdout}`);
+                        console.error(`stderr: ${stderr}`);
+                    });
+                }
+            }
+        }
+    });
+
+    setIPRoute.on('error', function (code) {
+        console.log('error: ' + code);
+    });
+}
+
+function udp_connect(address, port) {
+    if (UDP_client === null) {
+        UDP_client = dgram.createSocket('udp4');
+        UDP_client.bind(port);
+
+        UDP_client.on('listening', udpListening);
+        UDP_client.on('close', udpClose);
+        UDP_client.on('error', udpError);
+        UDP_client.on('message', udpMessage);
+    }
+}
+
+function udpError(err) {
+    console.log(`[UDP_client] error:\n${err.stack}`);
+    UDP_client.close();
+    setTimeout(udp_connect, 2000);
+}
+
+function udpClose() {
+    console.log('[UDP_client] close');
+
+    setTimeout(udp_connect, 2000);
+}
+
+function udpListening() {
+    const address = UDP_client.address();
+    console.log(`[UDP_client] listening ${address.address}:${address.port}`);
+}
+
+function udpMessage(msg) {
+    let UDPData = msg.toString('hex');
+
+    let header = UDPData.substr(0, 2);
+    if (header === 'fe') {
+        tas_mav.gcs_noti_handler(UDPData);
+    }
 }

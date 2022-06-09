@@ -467,6 +467,16 @@ function mavPortData(data) {
                     mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
                     send_aggr_to_Mobius(my_cnt_name, mavPacket, 2000);
                     setTimeout(parseMavFromDrone, 0, mavPacket);
+                    if (rf_udp_used === 'enable') {
+                        UDP_client.send(mavPacket, 0, mavPacket.length, 3000, '192.168.' + rf_udp.host,
+                            function (err) {
+                                if (err) {
+                                    console.log('UDP message send error', err);
+                                    return;
+                                }
+                            }
+                        );
+                    }
 
                     mavStrFromDrone = mavStrFromDrone.substr(mavLength);
                     mavStrFromDroneLength = 0;
@@ -621,6 +631,7 @@ function parseMavFromDrone(mavPacket) {
                 }
                 my_sortie_name = 'disarm';
                 my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
+                my_gimbal_name = my_gimbal_parent + '/' + my_sortie_name;
             }
         } else if (msg_id == mavlink.MAVLINK_MSG_ID_SYSTEM_TIME) { // #02 : SYSTEM_TIME
             muv_mqtt_client.publish(muv_pub_fc_system_time_topic, mavPacket);
@@ -692,10 +703,4 @@ function calculateFlightTime(calc_sortiename) {
         }
     });
     cal_sortiename = '';
-}
-
-function createMissionContainer(idx) {
-    var mission_parent_path = mission_parent[idx];
-    sh_adn.crtct(mission_parent_path + '?rcn=0', my_sortie_name, 0, function (rsc, res_body, count) {
-    });
 }
