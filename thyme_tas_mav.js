@@ -326,6 +326,9 @@ exports.noti = function (path_arr, cinObj, socket) {
 };
 
 exports.gcs_noti_handler = function (message) {
+    // console.log(message.toString('hex'));
+    sh_adn.crtci(my_command_name + '?rcn=0', 0, message.toString('hex'), null, function () {
+    });
     if (my_drone_type === 'dji') {
         var com_msg = message.toString();
         var com_message = com_msg.split(":");
@@ -493,6 +496,16 @@ function mavPortData(data) {
                     mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
                     send_aggr_to_Mobius(my_cnt_name, mavPacket, 2000);
                     setTimeout(parseMavFromDrone, 0, mavPacket);
+                    if (rf_udp_used === 'enable') {
+                        UDP_client.send(mavPacket, 0, mavPacket.length, 3000, '192.168.' + rf_udp.host,
+                            function (err) {
+                                if (err) {
+                                    console.log('UDP message send error', err);
+                                    return;
+                                }
+                            }
+                        );
+                    }
 
                     mavStrFromDrone = mavStrFromDrone.substr(mavLength);
                     mavStrFromDroneLength = 0;
@@ -704,3 +717,9 @@ function calculateFlightTime(calc_sortiename) {
     });
     cal_sortiename = '';
 }
+
+// function createMissionContainer(idx) {
+//     var mission_parent_path = mission_parent[idx];
+//     sh_adn.crtct(mission_parent_path + '?rcn=0', my_sortie_name, 0, function (rsc, res_body, count) {
+//     });
+// }

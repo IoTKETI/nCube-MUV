@@ -46,6 +46,8 @@ global.my_mission_name = '';
 global.my_sortie_name = 'disarm';
 global.my_gimbal_parent = '';
 global.my_gimbal_name = '';
+global.my_command_parent_name = '';
+global.my_command_name = '';
 
 global.my_drone_type = 'pixhawk';
 global.my_secure = 'off';
@@ -619,6 +621,19 @@ function retrieve_my_cnt_name(callback) {
             muv_pub_fc_bat_state_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/battery_status';
             muv_pub_fc_wp_yaw_behavior_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/wp_yaw_behavior';
             muv_sub_gcs_topic = '/Mobius/' + my_gcs_name + '/GCS_Data/' + drone_info.drone;
+
+            var info = {};
+            info.parent = '/Mobius/' + drone_info.gcs;
+            info.name = 'GCS_Data';
+            conf.cnt.push(JSON.parse(JSON.stringify(info)));
+
+            info = {};
+            info.parent = '/Mobius/' + drone_info.gcs + '/GCS_Data';
+            info.name = drone_info.drone;
+            conf.cnt.push(JSON.parse(JSON.stringify(info)));
+
+            my_command_parent_name = info.parent;
+            my_command_name = my_command_parent_name + '/' + info.name;
 
             MQTT_SUBSCRIPTION_ENABLE = 1;
             sh_state = 'crtae';
