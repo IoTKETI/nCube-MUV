@@ -1000,6 +1000,6 @@ function udpMessage(msg) {
 
     let header = UDPData.substr(0, 2);
     if (header === 'fe') {
-        tas_mav.gcs_noti_handler(UDPData);
+        tas_mav.gcs_noti_handler(msg);
     }
 }
