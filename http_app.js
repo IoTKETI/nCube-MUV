@@ -21,8 +21,7 @@ var url = require('url');
 var ip = require('ip');
 var shortid = require('shortid');
 var moment = require('moment');
-var spawn = require('child_process').spawn;
-var exec = require('child_process').exec;
+var {spawn, exec} = require('child_process');
 const os = require("os");
 const dgram = require("dgram");
 
@@ -931,7 +930,7 @@ function send_to_Mobius(topic, content_each_obj, gap) {
 
 function setIPandRoute(host) {
     let host_arr = host.split('.');
-    let setIPRoute = spawn('sh', ['./setIPandRoute.sh', host_arr[0], parseInt(host_arr[1])-100]);
+    let setIPRoute = spawn('sh', ['./setIPandRoute.sh', host_arr[0], parseInt(host_arr[1]) - 100]);
 
     setIPRoute.stdout.on('data', function (data) {
         console.log('stdout: ' + data);
@@ -946,9 +945,8 @@ function setIPandRoute(host) {
         if (code === 0) {
             var networkInterfaces = os.networkInterfaces();
             if (networkInterfaces.hasOwnProperty('eth0')) {
-                console.log(networkInterfaces['eth0'][0].address);
-                if (networkInterfaces['eth0'][0].address !== '192.168.' + host_arr[0] + '.' + parseInt(host_arr[1])-100) {
-                    exec('sudo ifconfig eth0 192.168.' + host_arr[0] + '.' + parseInt(host_arr[1])-100, (error, stdout, stderr) => {
+                if (networkInterfaces['eth0'][0].address !== '192.168.' + host_arr[0] + '.' + parseInt(host_arr[1]) - 100) {
+                    exec('sudo ifconfig eth0 192.168.' + host_arr[0] + '.' + (parseInt(host_arr[1]) - 100).toString(), (error, stdout, stderr) => {
                         if (error) {
                             console.error(`exec error: ${error}`);
                             return;
