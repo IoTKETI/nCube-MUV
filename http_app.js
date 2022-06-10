@@ -930,38 +930,82 @@ function send_to_Mobius(topic, content_each_obj, gap) {
 
 function setIPandRoute(host) {
     let host_arr = host.split('.');
-    let setIPRoute = spawn('sh', ['./setIPandRoute.sh', host_arr[0], parseInt(host_arr[1]) - 100]);
 
-    setIPRoute.stdout.on('data', function (data) {
-        console.log('stdout: ' + data);
-    });
-
-    setIPRoute.stderr.on('data', function (data) {
-        console.log('stderr: ' + data);
-    });
-
-    setIPRoute.on('exit', function (code) {
-        console.log('exit: ' + code);
-        if (code === 0) {
-            var networkInterfaces = os.networkInterfaces();
-            if (networkInterfaces.hasOwnProperty('eth0')) {
-                if (networkInterfaces['eth0'][0].address !== '192.168.' + host_arr[0] + '.' + parseInt(host_arr[1]) - 100) {
-                    exec('sudo ifconfig eth0 192.168.' + host_arr[0] + '.' + (parseInt(host_arr[1]) - 100).toString(), (error, stdout, stderr) => {
+    var networkInterfaces = os.networkInterfaces();
+    if (networkInterfaces.hasOwnProperty('eth0')) {
+        if (networkInterfaces['eth0'][0].address !== '192.168.' + host_arr[0] + '.' + (parseInt(host_arr[1]) - 100).toString()) {
+            // set static ip
+            exec('sudo ifconfig eth0 192.168.' + host_arr[0] + '.' + (parseInt(host_arr[1]) - 100).toString(), (error, stdout, stderr) => {
+                if (error) {
+                    console.error(`[error] in static ip setting : ${error}`);
+                    return;
+                }
+                console.log(`stdout: ${stdout}`);
+                console.error(`stderr: ${stderr}`);
+                // restart dhcpcd service
+                exec('sudo /etc/init.d/dhcpcd restart', (error, stdout, stderr) => {
+                    if (error) {
+                        console.error(`[error] in restart dhcpcd : ${error}`);
+                        return;
+                    }
+                    console.log(`stdout: ${stdout}`);
+                    console.error(`stderr: ${stderr}`);
+                    // set route
+                    exec('sudo route add -net 192.168.' + host_arr[0] + '.0 netmask 255.255.255.0 gw 192.168.' + host_arr[0] + '.' + (parseInt(host_arr[1]) - 100).toString(), (error, stdout, stderr) => {
                         if (error) {
-                            console.error(`exec error: ${error}`);
+                            console.error(`[error] in routing table setting : ${error}`);
                             return;
                         }
                         console.log(`stdout: ${stdout}`);
                         console.error(`stderr: ${stderr}`);
                     });
+                });
+            });
+        } else {
+            // set route
+            exec('sudo route add -net 192.168.' + host_arr[0] + '.0 netmask 255.255.255.0 gw 192.168.' + host_arr[0] + '.' + (parseInt(host_arr[1]) - 100).toString(), (error, stdout, stderr) => {
+                if (error) {
+                    console.error(`[error] in routing table setting : ${error}`);
+                    return;
                 }
-            }
+                console.log(`stdout: ${stdout}`);
+                console.error(`stderr: ${stderr}`);
+            });
         }
-    });
+    }
 
-    setIPRoute.on('error', function (code) {
-        console.log('error: ' + code);
-    });
+    // let setIPRoute = spawn('sh', ['./setIPandRoute.sh', host_arr[0], parseInt(host_arr[1]) - 100]);
+    //
+    // setIPRoute.stdout.on('data', function (data) {
+    //     console.log('stdout: ' + data);
+    // });
+    //
+    // setIPRoute.stderr.on('data', function (data) {
+    //     console.log('stderr: ' + data);
+    // });
+    //
+    // setIPRoute.on('exit', function (code) {
+    //     console.log('exit: ' + code);
+    //     if (code === 0) {
+    //         var networkInterfaces = os.networkInterfaces();
+    //         if (networkInterfaces.hasOwnProperty('eth0')) {
+    //             if (networkInterfaces['eth0'][0].address !== '192.168.' + host_arr[0] + '.' + (parseInt(host_arr[1]) - 100).toString()) {
+    //                 exec('sudo ifconfig eth0 192.168.' + host_arr[0] + '.' + (parseInt(host_arr[1]) - 100).toString(), (error, stdout, stderr) => {
+    //                     if (error) {
+    //                         console.error(`exec error: ${error}`);
+    //                         return;
+    //                     }
+    //                     console.log(`stdout: ${stdout}`);
+    //                     console.error(`stderr: ${stderr}`);
+    //                 });
+    //             }
+    //         }
+    //     }
+    // });
+    //
+    // setIPRoute.on('error', function (code) {
+    //     console.log('error: ' + code);
+    // });
 }
 
 function udp_connect(address, port) {
