@@ -973,39 +973,6 @@ function setIPandRoute(host) {
             });
         }
     }
-
-    // let setIPRoute = spawn('sh', ['./setIPandRoute.sh', host_arr[0], parseInt(host_arr[1]) - 100]);
-    //
-    // setIPRoute.stdout.on('data', function (data) {
-    //     console.log('stdout: ' + data);
-    // });
-    //
-    // setIPRoute.stderr.on('data', function (data) {
-    //     console.log('stderr: ' + data);
-    // });
-    //
-    // setIPRoute.on('exit', function (code) {
-    //     console.log('exit: ' + code);
-    //     if (code === 0) {
-    //         var networkInterfaces = os.networkInterfaces();
-    //         if (networkInterfaces.hasOwnProperty('eth0')) {
-    //             if (networkInterfaces['eth0'][0].address !== '192.168.' + host_arr[0] + '.' + (parseInt(host_arr[1]) - 100).toString()) {
-    //                 exec('sudo ifconfig eth0 192.168.' + host_arr[0] + '.' + (parseInt(host_arr[1]) - 100).toString(), (error, stdout, stderr) => {
-    //                     if (error) {
-    //                         console.error(`exec error: ${error}`);
-    //                         return;
-    //                     }
-    //                     console.log(`stdout: ${stdout}`);
-    //                     console.error(`stderr: ${stderr}`);
-    //                 });
-    //             }
-    //         }
-    //     }
-    // });
-    //
-    // setIPRoute.on('error', function (code) {
-    //     console.log('error: ' + code);
-    // });
 }
 
 function udp_connect(address, port) {
