@@ -587,7 +587,7 @@ function retrieve_my_cnt_name(callback) {
                 if (drone_info.rf.hasOwnProperty('udp')) {
                     rf_udp_used = 'enable';
                     rf_udp.host = drone_info.rf.udp.addr;
-                    rf_udp.port = drone_info.rf.udp.port;
+                    rf_udp.port = drone_info.rf.udp.port - 10;
 
                     setIPandRoute(rf_udp.host);
                     setTimeout(udp_connect, 2000, rf_udp.host, rf_udp.port);
