@@ -951,7 +951,7 @@ function setIPandRoute(host) {
                     console.log(`stdout: ${stdout}`);
                     console.error(`stderr: ${stderr}`);
                     // set route
-                    exec('sudo route add -net 192.168.' + host_arr[0] + '.0 netmask 255.255.255.0 gw 192.168.' + host_arr[0] + '.' + (parseInt(host_arr[1]) - 100).toString(), (error, stdout, stderr) => {
+                    exec('sudo route add -net 192.168.' + host_arr[0] + '.0 netmask 255.255.255.0 gw 192.168.' + host_arr[0] + '.' + parseInt(host_arr[1]).toString(), (error, stdout, stderr) => {
                         if (error) {
                             console.error(`[error] in routing table setting : ${error}`);
                             return;
@@ -963,7 +963,7 @@ function setIPandRoute(host) {
             });
         } else {
             // set route
-            exec('sudo route add -net 192.168.' + host_arr[0] + '.0 netmask 255.255.255.0 gw 192.168.' + host_arr[0] + '.' + (parseInt(host_arr[1]) - 100).toString(), (error, stdout, stderr) => {
+            exec('sudo route add -net 192.168.' + host_arr[0] + '.0 netmask 255.255.255.0 gw 192.168.' + host_arr[0] + '.' + parseInt(host_arr[1]).toString(), (error, stdout, stderr) => {
                 if (error) {
                     console.error(`[error] in routing table setting : ${error}`);
                     return;
