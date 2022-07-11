@@ -590,7 +590,7 @@ function retrieve_my_cnt_name(callback) {
                     rf_udp.port = drone_info.rf.udp.port;
 
                     setIPandRoute(rf_udp.host);
-                    udp_connect(rf_udp.host, rf_udp.port);
+                    setTimeout(udp_connect, 2000, rf_udp.host, rf_udp.port);
                 }
             }
 
@@ -978,7 +978,7 @@ function setIPandRoute(host) {
 function udp_connect(address, port) {
     if (UDP_client === null) {
         UDP_client = dgram.createSocket('udp4');
-        UDP_client.bind(port);
+        UDP_client.bind(port, '192.168.' + address);
 
         UDP_client.on('listening', udpListening);
         UDP_client.on('close', udpClose);
