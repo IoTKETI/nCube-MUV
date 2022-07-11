@@ -933,7 +933,7 @@ function setIPandRoute(host) {
 
     var networkInterfaces = os.networkInterfaces();
     if (networkInterfaces.hasOwnProperty('eth0')) {
-        if (networkInterfaces['eth0'][0].address !== '192.168.' + host_arr[0] + '.' + (parseInt(host_arr[1]) - 100).toString()) {
+        if (networkInterfaces['eth0'][0].address !== '192.168.' + host_arr[0] + '.' + parseInt(host_arr[1]).toString()) {
             // set static ip
             exec('sudo ifconfig eth0 192.168.' + host_arr[0] + '.' + (parseInt(host_arr[1]) - 100).toString(), (error, stdout, stderr) => {
                 if (error) {
