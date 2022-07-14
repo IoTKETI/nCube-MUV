@@ -55,6 +55,8 @@ global.gimbal = {};
 
 global.rf_udp = {};
 global.UDP_client = null;
+global.my_rf_address = '';
+global.to_rf_address = '';
 
 global.Req_auth = '';
 global.Res_auth = '';
@@ -584,6 +586,9 @@ function retrieve_my_cnt_name(callback) {
             if (drone_info.hasOwnProperty('rf')) {
                 if (drone_info.rf.hasOwnProperty('udp')) {
                     rf_udp.host = drone_info.rf.udp.addr;
+                    to_rf_address = drone_info.rf.udp.addr;
+                    let addr_arr = drone_info.rf.udp.addr.split('.');
+                    my_rf_address = addr_arr[0] + '.' + addr_arr[1] + '.' + addr_arr[2] + '.' + (parseInt(addr_arr[3])-100);
                     rf_udp.port = drone_info.rf.udp.port;
 
                     setIPandRoute(rf_udp.host);
@@ -948,7 +953,7 @@ function setIPandRoute(host) {
                     console.log(`stdout: ${stdout}`);
                     console.error(`stderr: ${stderr}`);
                     // set route
-                    exec('sudo route add -net ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.0 netmask 255.255.255.0 gw ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.' + (parseInt(host_arr[1]) - 100).toString(), (error, stdout, stderr) => {
+                    exec('sudo route add -net ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.0 netmask 255.255.255.0 gw ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.' + (parseInt(host_arr[3]) - 100).toString(), (error, stdout, stderr) => {
                         if (error) {
                             console.error(`[error] in routing table setting : ${error}`);
                             return;
@@ -960,7 +965,7 @@ function setIPandRoute(host) {
             });
         } else {
             // set route
-            exec('sudo route add -net ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.0 netmask 255.255.255.0 gw ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.' + (parseInt(host_arr[1]) - 100).toString(), (error, stdout, stderr) => {
+            exec('sudo route add -net ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.0 netmask 255.255.255.0 gw ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.' + (parseInt(host_arr[3]) - 100).toString(), (error, stdout, stderr) => {
                 if (error) {
                     console.error(`[error] in routing table setting : ${error}`);
                     return;
@@ -975,7 +980,7 @@ function setIPandRoute(host) {
 function udp_connect(address, port) {
     if (UDP_client === null) {
         UDP_client = dgram.createSocket('udp4');
-        UDP_client.bind(parseInt(port) + 2, address);
+        UDP_client.bind(parseInt(port) + 2);
 
         UDP_client.on('listening', udpListening);
         UDP_client.on('close', udpClose);
@@ -1010,3 +1015,4 @@ function udpMessage(msg, rinfo) {
         tas_mav.gcs_noti_handler(msg);
     }
 }
+
