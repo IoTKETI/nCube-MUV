@@ -935,9 +935,9 @@ function setIPandRoute(host) {
 
     var networkInterfaces = os.networkInterfaces();
     if (networkInterfaces.hasOwnProperty('eth0')) {
-        if (networkInterfaces['eth0'][0].address !== host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.' + (parseInt(host_arr[3]) - 100).toString()) {
+        if (networkInterfaces['eth0'][0].address !== my_rf_address) {
             // set static ip
-            exec('sudo ifconfig eth0 ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.' + (parseInt(host_arr[3]) - 100).toString(), (error, stdout, stderr) => {
+            exec('sudo ifconfig eth0 ' + my_rf_address, (error, stdout, stderr) => {
                 if (error) {
                     console.error(`[error] in static ip setting : ${error}`);
                     return;
@@ -953,7 +953,7 @@ function setIPandRoute(host) {
                     console.log(`stdout: ${stdout}`);
                     console.error(`stderr: ${stderr}`);
                     // set route
-                    exec('sudo route add -net ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.0 netmask 255.255.255.0 gw ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.' + (parseInt(host_arr[3]) - 100).toString(), (error, stdout, stderr) => {
+                    exec('sudo route add -net ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.0 netmask 255.255.255.0 gw ' + my_rf_address, (error, stdout, stderr) => {
                         if (error) {
                             console.error(`[error] in routing table setting : ${error}`);
                             return;
@@ -965,7 +965,7 @@ function setIPandRoute(host) {
             });
         } else {
             // set route
-            exec('sudo route add -net ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.0 netmask 255.255.255.0 gw ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.' + (parseInt(host_arr[3]) - 100).toString(), (error, stdout, stderr) => {
+            exec('sudo route add -net ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.0 netmask 255.255.255.0 gw ' + my_rf_address, (error, stdout, stderr) => {
                 if (error) {
                     console.error(`[error] in routing table setting : ${error}`);
                     return;
