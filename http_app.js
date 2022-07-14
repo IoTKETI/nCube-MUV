@@ -935,76 +935,79 @@ function setIPandRoute(host) {
 
     var networkInterfaces = os.networkInterfaces();
     if (networkInterfaces.hasOwnProperty('eth0')) {
-        if (networkInterfaces['eth0'][0].address !== my_rf_address) {
-            // set static ip
-            exec('sudo ifconfig eth0 ' + my_rf_address, (error, stdout, stderr) => {
-                if (error) {
-                    console.error(`[error] in static ip setting : ${error}`);
-                    return;
-                }
-                console.log(`stdout: ${stdout}`);
-                console.error(`stderr: ${stderr}`);
-                // restart dhcpcd service
-                exec('sudo /etc/init.d/dhcpcd restart', (error, stdout, stderr) => {
+        if (networkInterfaces['eth0'][0].family === 'IPv4') {
+            if (networkInterfaces['eth0'][0].address !== my_rf_address) {
+                // set static ip
+                exec('sudo ifconfig eth0 ' + my_rf_address, (error, stdout, stderr) => {
                     if (error) {
-                        console.error(`[error] in restart dhcpcd : ${error}`);
+                        console.error(`[error] in static ip setting : ${error}`);
                         return;
                     }
-                    console.log(`stdout: ${stdout}`);
-                    console.error(`stderr: ${stderr}`);
+                    if (stdout) {
+                        console.log(`stdout: ${stdout}`);
+                    }
+                    if (stderr) {
+                        console.error(`stderr: ${stderr}`);
+                    }
+                    console.log(os.networkInterfaces());
                     // set route
                     exec('sudo route add -net ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.0 netmask 255.255.255.0 gw ' + my_rf_address, (error, stdout, stderr) => {
                         if (error) {
                             console.error(`[error] in routing table setting : ${error}`);
                             return;
                         }
-                        console.log(`stdout: ${stdout}`);
-                        console.error(`stderr: ${stderr}`);
-                    });
-                });
-            });
-        } else {
-            // set route
-            exec('sudo route add -net ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.0 netmask 255.255.255.0 gw ' + my_rf_address, (error, stdout, stderr) => {
-                if (error) {
-                    console.error(`[error] in routing table setting : ${error}`);
-                    return;
-                }
-                console.log(`stdout: ${stdout}`);
-                console.error(`stderr: ${stderr}`);
-            });
-        }
-
-        setTimeout(() => {
-            if (networkInterfaces['eth0'][0].address !== my_rf_address) {
-                exec('sudo ifconfig eth0 ' + my_rf_address, (error, stdout, stderr) => {
-                    if (error) {
-                        console.error(`[error] in static ip setting : ${error}`);
-                        return;
-                    }
-                    console.log(`stdout: ${stdout}`);
-                    console.error(`stderr: ${stderr}`);
-                    // restart dhcpcd service
-                    exec('sudo /etc/init.d/dhcpcd restart', (error, stdout, stderr) => {
-                        if (error) {
-                            console.error(`[error] in restart dhcpcd : ${error}`);
-                            return;
+                        if (stdout) {
+                            console.log(`stdout: ${stdout}`);
                         }
-                        console.log(`stdout: ${stdout}`);
-                        console.error(`stderr: ${stderr}`);
-                        // set route
-                        exec('sudo route add -net ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.0 netmask 255.255.255.0 gw ' + my_rf_address, (error, stdout, stderr) => {
+                        if (stderr) {
+                            console.error(`stderr: ${stderr}`);
+                        }
+                        exec('route', (error, stdout, stderr) => {
                             if (error) {
                                 console.error(`[error] in routing table setting : ${error}`);
                                 return;
                             }
-                            console.log(`stdout: ${stdout}`);
-                            console.error(`stderr: ${stderr}`);
+                            if (stdout) {
+                                console.log(`stdout: ${stdout}`);
+                            }
+                            if (stderr) {
+                                console.error(`stderr: ${stderr}`);
+                            }
                         });
                     });
                 });
+            } else {
+                // set route
+                exec('sudo route add -net ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.0 netmask 255.255.255.0 gw ' + my_rf_address, (error, stdout, stderr) => {
+                    if (error) {
+                        console.error(`[error] in routing table setting : ${error}`);
+                        return;
+                    }
+                    if (stdout) {
+                        console.log(`stdout: ${stdout}`);
+                    }
+                    if (stderr) {
+                        console.error(`stderr: ${stderr}`);
+                    }
+                    exec('route', (error, stdout, stderr) => {
+                        if (error) {
+                            console.error(`[error] in routing table setting : ${error}`);
+                            return;
+                        }
+                        if (stdout) {
+                            console.log(`stdout: ${stdout}`);
+                        }
+                        if (stderr) {
+                            console.error(`stderr: ${stderr}`);
+                        }
+                    });
+                });
             }
-        }, 2000);
+        } else {
+            setTimeout(setIPandRoute, 500, my_rf_address);
+        }
+    } else {
+        setTimeout(setIPandRoute, 500, my_rf_address);
     }
 }
 
