@@ -474,8 +474,8 @@ function mavPortData(data) {
                     udpMavPacket.topic = my_cnt_name;
                     udpMavPacket.message = mavPacket;
                     if (UDP_client !== null) {
-                        UDP_client.send(JSON.stringify(udpMavPacket), 0, JSON.stringify(udpMavPacket).length, parseInt(rf_udp.port) + 3, to_rf_address , () => {
-                            console.log('Message ' + JSON.stringify(udpMavPacket) + ' to ' + to_rf_address + ':' + parseInt(rf_udp.port+3))
+                        UDP_client.send(JSON.stringify(udpMavPacket), 0, JSON.stringify(udpMavPacket).length, parseInt(rf_udp.port) + 3, to_rf_address, () => {
+                            console.log('Message ' + JSON.stringify(udpMavPacket) + ' to ' + to_rf_address + ':' + parseInt(rf_udp.port + 3))
                         });
                     }
 
@@ -499,7 +499,7 @@ function mavPortData(data) {
                     udpMavPacket.message = mavPacket;
                     if (UDP_client !== null) {
                         UDP_client.send(JSON.stringify(udpMavPacket), 0, JSON.stringify(udpMavPacket).length, parseInt(rf_udp.port) + 3, rf_udp.host, () => {
-                            console.log('Message ' + JSON.stringify(udpMavPacket) + ' to ' + to_rf_address + ':' + parseInt(rf_udp.port+3))
+                            console.log('Message ' + JSON.stringify(udpMavPacket) + ' to ' + to_rf_address + ':' + parseInt(rf_udp.port + 3))
                         });
                     }
 

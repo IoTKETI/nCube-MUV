@@ -588,7 +588,7 @@ function retrieve_my_cnt_name(callback) {
                     rf_udp.host = drone_info.rf.udp.addr;
                     to_rf_address = drone_info.rf.udp.addr;
                     let addr_arr = drone_info.rf.udp.addr.split('.');
-                    my_rf_address = addr_arr[0] + '.' + addr_arr[1] + '.' + addr_arr[2] + '.' + (parseInt(addr_arr[3])-100);
+                    my_rf_address = addr_arr[0] + '.' + addr_arr[1] + '.' + addr_arr[2] + '.' + (parseInt(addr_arr[3]) - 100);
                     rf_udp.port = drone_info.rf.udp.port;
 
                     setIPandRoute(rf_udp.host);
