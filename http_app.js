@@ -591,7 +591,7 @@ function retrieve_my_cnt_name(callback) {
                     my_rf_address = addr_arr[0] + '.' + addr_arr[1] + '.' + addr_arr[2] + '.' + (parseInt(addr_arr[3]) - 100);
                     rf_udp.port = drone_info.rf.udp.port;
 
-                    setIPandRoute(rf_udp.host);
+                    setIPandRoute(my_rf_address);
                     setTimeout(udp_connect, 500, rf_udp.host, rf_udp.port);
                 }
             }
