@@ -35,7 +35,6 @@ var HTTP_SUBSCRIPTION_ENABLE = 0;
 var MQTT_SUBSCRIPTION_ENABLE = 0;
 
 global.my_control_type = '';
-global.my_rc_name = '';
 global.my_gcs_name = '';
 global.my_parent_cnt_name = '';
 global.my_cnt_name = '';
@@ -55,7 +54,6 @@ global.my_system_id = 8;
 global.gimbal = {};
 
 global.rf_udp = {};
-global.rf_udp_used = 'disable';
 global.UDP_client = null;
 
 global.Req_auth = '';
@@ -120,8 +118,8 @@ for (var i = 0; i < conf.sub.length; i++) {
         } else if (url.parse(conf.sub[i].nu).protocol === 'mqtt:') {
             MQTT_SUBSCRIPTION_ENABLE = 1;
         } else {
-            //console.log('notification uri of subscription is not supported');
-            //process.exit();
+            // console.log('notification uri of subscription is not supported');
+            // process.exit();
         }
     }
 }
@@ -585,12 +583,11 @@ function retrieve_my_cnt_name(callback) {
 
             if (drone_info.hasOwnProperty('rf')) {
                 if (drone_info.rf.hasOwnProperty('udp')) {
-                    rf_udp_used = 'enable';
                     rf_udp.host = drone_info.rf.udp.addr;
                     rf_udp.port = drone_info.rf.udp.port;
 
                     setIPandRoute(rf_udp.host);
-                    udp_connect(rf_udp.host, rf_udp.port);
+                    setTimeout(udp_connect, 500, rf_udp.host, rf_udp.port);
                 }
             }
 
@@ -933,9 +930,9 @@ function setIPandRoute(host) {
 
     var networkInterfaces = os.networkInterfaces();
     if (networkInterfaces.hasOwnProperty('eth0')) {
-        if (networkInterfaces['eth0'][0].address !== '192.168.' + host_arr[0] + '.' + (parseInt(host_arr[1]) - 100).toString()) {
+        if (networkInterfaces['eth0'][0].address !== host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.' + (parseInt(host_arr[3]) - 100).toString()) {
             // set static ip
-            exec('sudo ifconfig eth0 192.168.' + host_arr[0] + '.' + (parseInt(host_arr[1]) - 100).toString(), (error, stdout, stderr) => {
+            exec('sudo ifconfig eth0 ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.' + (parseInt(host_arr[3]) - 100).toString(), (error, stdout, stderr) => {
                 if (error) {
                     console.error(`[error] in static ip setting : ${error}`);
                     return;
@@ -951,7 +948,7 @@ function setIPandRoute(host) {
                     console.log(`stdout: ${stdout}`);
                     console.error(`stderr: ${stderr}`);
                     // set route
-                    exec('sudo route add -net 192.168.' + host_arr[0] + '.0 netmask 255.255.255.0 gw 192.168.' + host_arr[0] + '.' + (parseInt(host_arr[1]) - 100).toString(), (error, stdout, stderr) => {
+                    exec('sudo route add -net ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.0 netmask 255.255.255.0 gw ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.' + (parseInt(host_arr[1]) - 100).toString(), (error, stdout, stderr) => {
                         if (error) {
                             console.error(`[error] in routing table setting : ${error}`);
                             return;
@@ -963,7 +960,7 @@ function setIPandRoute(host) {
             });
         } else {
             // set route
-            exec('sudo route add -net 192.168.' + host_arr[0] + '.0 netmask 255.255.255.0 gw 192.168.' + host_arr[0] + '.' + (parseInt(host_arr[1]) - 100).toString(), (error, stdout, stderr) => {
+            exec('sudo route add -net ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.0 netmask 255.255.255.0 gw ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.' + (parseInt(host_arr[1]) - 100).toString(), (error, stdout, stderr) => {
                 if (error) {
                     console.error(`[error] in routing table setting : ${error}`);
                     return;
@@ -978,7 +975,7 @@ function setIPandRoute(host) {
 function udp_connect(address, port) {
     if (UDP_client === null) {
         UDP_client = dgram.createSocket('udp4');
-        UDP_client.bind(port);
+        UDP_client.bind(parseInt(port) + 2, address);
 
         UDP_client.on('listening', udpListening);
         UDP_client.on('close', udpClose);
@@ -1004,7 +1001,8 @@ function udpListening() {
     console.log(`[UDP_client] listening ${address.address}:${address.port}`);
 }
 
-function udpMessage(msg) {
+function udpMessage(msg, rinfo) {
+    // console.log('[udpMessage] ' + msg.toString('hex') + ' From ' + rinfo.address + ':' + rinfo.port);
     let UDPData = msg.toString('hex');
 
     let header = UDPData.substr(0, 2);

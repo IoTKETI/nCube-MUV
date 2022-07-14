@@ -303,7 +303,7 @@ function dji_handler(data) {
     params.load = 500;
     params.voltage_battery = dji.bat_voltage;
     params.current_battery = dji.bat_current;
-    params.battery_remaining = dji.bat_percentagea;
+    params.battery_remaining = dji.bat_percentage;
     params.drop_rate_comm = 8;
     params.errors_comm = 0;
     params.errors_count1 = 0;
@@ -470,8 +470,11 @@ function mavPortData(data) {
                     mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
                     send_aggr_to_Mobius(my_cnt_name, mavPacket, 2000);
                     setTimeout(parseMavFromDrone, 0, mavPacket);
-                    if (rf_udp_used === 'enable') {
-                        UDP_client.send(mavPacket, 0, mavPacket.length, 3000, '192.168.' + rf_udp.host,
+                    let udpMavPacket = {};
+                    udpMavPacket.topic = my_cnt_name;
+                    udpMavPacket.message = mavPacket;
+                    if (UDP_client !== null) {
+                        UDP_client.send(JSON.stringify(udpMavPacket), 0, JSON.stringify(udpMavPacket).length, parseInt(rf_udp.port) + 3, rf_udp.host,
                             function (err) {
                                 if (err) {
                                     console.log('UDP message send error', err);
@@ -496,8 +499,11 @@ function mavPortData(data) {
                     mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
                     send_aggr_to_Mobius(my_cnt_name, mavPacket, 2000);
                     setTimeout(parseMavFromDrone, 0, mavPacket);
-                    if (rf_udp_used === 'enable') {
-                        UDP_client.send(mavPacket, 0, mavPacket.length, 3000, '192.168.' + rf_udp.host,
+                    let udpMavPacket = {};
+                    udpMavPacket.topic = my_cnt_name;
+                    udpMavPacket.message = mavPacket;
+                    if (UDP_client !== null) {
+                        UDP_client.send(JSON.stringify(udpMavPacket), 0, JSON.stringify(udpMavPacket).length, parseInt(rf_udp.port) + 3, rf_udp.host,
                             function (err) {
                                 if (err) {
                                     console.log('UDP message send error', err);
@@ -552,9 +558,6 @@ try {
 }
 
 var flag_base_mode = 0;
-var start_arm_time = 0;
-var cal_flag = 0;
-var cal_sortiename = '';
 
 function parseMavFromDrone(mavPacket) {
     try {
@@ -614,6 +617,24 @@ function parseMavFromDrone(mavPacket) {
 
             muv_mqtt_client.publish(muv_pub_fc_hb_topic, JSON.stringify(fc.heartbeat));
 
+            // TODO: disarmed에도 sortie 생성하는 문제 수정
+            // if ((fc.heartbeat.base_mode & 0x80) === 0x80) {
+            //         start_arm_time = moment();
+            //         my_sortie_name = moment().format('YYYY_MM_DD_T_HH_mm');
+            //         my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
+            //         sh_adn.crtct(my_parent_cnt_name + '?rcn=0', my_sortie_name, 0, function (rsc, res_body, count) {
+            //         });
+            //         cal_flag = 1;
+            //         cal_sortiename = my_sortie_name;
+            // } else {
+            //     if (cal_flag == 1) {
+            //         cal_flag = 0;
+            //         calculateFlightTime(cal_sortiename);
+            //     }
+            //     my_sortie_name = 'disarm';
+            //     my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
+            //     my_gimbal_name = my_gimbal_parent + '/' + my_sortie_name;
+            // }
             if (fc.heartbeat.base_mode & 0x80) {
                 if (flag_base_mode == 3) {
                     start_arm_time = moment();
@@ -622,8 +643,6 @@ function parseMavFromDrone(mavPacket) {
                     my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
                     sh_adn.crtct(my_parent_cnt_name + '?rcn=0', my_sortie_name, 0, function (rsc, res_body, count) {
                     });
-                    cal_flag = 1;
-                    cal_sortiename = my_sortie_name;
 
                     // for (var idx in mission_parent) {
                     //     if (mission_parent.hasOwnProperty(idx)) {
@@ -638,10 +657,7 @@ function parseMavFromDrone(mavPacket) {
                 }
             } else {
                 flag_base_mode = 0;
-                if (cal_flag == 1) {
-                    cal_flag = 0;
-                    calculateFlightTime(cal_sortiename);
-                }
+
                 my_sortie_name = 'disarm';
                 my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
                 my_gimbal_name = my_gimbal_parent + '/' + my_sortie_name;
@@ -676,46 +692,6 @@ function parseMavFromDrone(mavPacket) {
     } catch (e) {
         console.log('[parseMavFromDrone Error]', e);
     }
-}
-
-var end_arm_time = 0;
-var arming_time = 0;
-var flight_time = {};
-
-function calculateFlightTime(calc_sortiename) {
-    end_arm_time = moment();
-    arming_time = end_arm_time.diff(start_arm_time, 'second');
-    var sortie_name = calc_sortiename;
-    sh_adn.rtvct('/Mobius/Life_Prediction/History/' + conf.ae.name + '/la', 0, function (rsc, res_body, count) {
-        if (rsc == 2000) {
-            flight_time = res_body[Object.keys(res_body)[0]].con;
-            if (flight_time.total_flight_time == 0) {
-                flight_time.total_flight_time = arming_time;
-            } else {
-                flight_time.total_flight_time += arming_time;
-            }
-            flight_time.arming_time = arming_time;
-            flight_time.sortie_name = sortie_name;
-            console.log('Flight Time : ', flight_time);
-
-            sh_adn.crtci('/Mobius/Life_Prediction/History/' + conf.ae.name + '?rcn=0', 0, flight_time, null, function () {
-            });
-
-        } else {
-            sh_adn.crtct('/Mobius/Life_Prediction/History' + '?rcn=0', conf.ae.name, 0, function (rsc, res_body, count) {
-            });
-
-            flight_time.total_flight_time = arming_time;
-            flight_time.arming_time = arming_time;
-            flight_time.sortie_name = sortie_name;
-            console.log('Flight Time : ', flight_time);
-            sh_adn.crtci('/Mobius/Life_Prediction/History/' + conf.ae.name + '?rcn=0', 0, flight_time, null, function () {
-            });
-
-            console.log('x-m2m-rsc : ' + rsc + ' <----' + res_body);
-        }
-    });
-    cal_sortiename = '';
 }
 
 // function createMissionContainer(idx) {
