@@ -974,6 +974,37 @@ function setIPandRoute(host) {
                 console.error(`stderr: ${stderr}`);
             });
         }
+
+        setTimeout(() => {
+            if (networkInterfaces['eth0'][0].address !== my_rf_address) {
+                exec('sudo ifconfig eth0 ' + my_rf_address, (error, stdout, stderr) => {
+                    if (error) {
+                        console.error(`[error] in static ip setting : ${error}`);
+                        return;
+                    }
+                    console.log(`stdout: ${stdout}`);
+                    console.error(`stderr: ${stderr}`);
+                    // restart dhcpcd service
+                    exec('sudo /etc/init.d/dhcpcd restart', (error, stdout, stderr) => {
+                        if (error) {
+                            console.error(`[error] in restart dhcpcd : ${error}`);
+                            return;
+                        }
+                        console.log(`stdout: ${stdout}`);
+                        console.error(`stderr: ${stderr}`);
+                        // set route
+                        exec('sudo route add -net ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.0 netmask 255.255.255.0 gw ' + my_rf_address, (error, stdout, stderr) => {
+                            if (error) {
+                                console.error(`[error] in routing table setting : ${error}`);
+                                return;
+                            }
+                            console.log(`stdout: ${stdout}`);
+                            console.error(`stderr: ${stderr}`);
+                        });
+                    });
+                });
+            }
+        }, 2000);
     }
 }
 
