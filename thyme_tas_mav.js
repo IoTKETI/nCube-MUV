@@ -470,14 +470,8 @@ function mavPortData(data) {
                     mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
                     send_aggr_to_Mobius(my_cnt_name, mavPacket, 2000);
                     setTimeout(parseMavFromDrone, 0, mavPacket);
-                    let udpMavPacket = {};
-                    udpMavPacket.topic = my_cnt_name;
-                    udpMavPacket.message = mavPacket;
-                    if (UDP_client !== null) {
-                        UDP_client.send(JSON.stringify(udpMavPacket), 0, JSON.stringify(udpMavPacket).length, parseInt(rf_udp.port) + 3, to_rf_address, () => {
-                            // console.log('Message ' + JSON.stringify(udpMavPacket) + ' to ' + to_rf_address + ':' + parseInt(rf_udp.port + 3))
-                        });
-                    }
+                    rf_mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
+
 
                     mavStrFromDrone = mavStrFromDrone.substr(mavLength);
                     mavStrFromDroneLength = 0;
@@ -494,14 +488,8 @@ function mavPortData(data) {
                     mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
                     send_aggr_to_Mobius(my_cnt_name, mavPacket, 2000);
                     setTimeout(parseMavFromDrone, 0, mavPacket);
-                    let udpMavPacket = {};
-                    udpMavPacket.topic = my_cnt_name;
-                    udpMavPacket.message = mavPacket;
-                    if (UDP_client !== null) {
-                        UDP_client.send(JSON.stringify(udpMavPacket), 0, JSON.stringify(udpMavPacket).length, parseInt(rf_udp.port) + 3, rf_udp.host, () => {
-                            // console.log('Message ' + JSON.stringify(udpMavPacket) + ' to ' + to_rf_address + ':' + parseInt(rf_udp.port + 3))
-                        });
-                    }
+                    rf_mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
+
 
                     mavStrFromDrone = mavStrFromDrone.substr(mavLength);
                     mavStrFromDroneLength = 0;

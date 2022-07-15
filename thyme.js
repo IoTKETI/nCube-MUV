@@ -28,6 +28,7 @@ global.conf = require('./conf.js');
 global.sh_state = 'rtvct';
 
 global.mqtt_client = null;
+global.rf_mqtt_client = null;
 global.muv_mqtt_client = null;
 
 // AE core

@@ -53,10 +53,8 @@ global.my_system_id = 8;
 
 global.gimbal = {};
 
-global.rf_udp = {};
-global.UDP_client = null;
+global.my_rf_host = '';
 global.my_rf_address = '';
-global.to_rf_address = '';
 
 global.Req_auth = '';
 global.Res_auth = '';
@@ -153,6 +151,8 @@ function ready_for_notification() {
             }
         }
         mqtt_connect(conf.cse.host, muv_sub_gcs_topic, noti_topic);
+
+        rf_mqtt_connect(drone_info.rf.host, muv_sub_gcs_topic, noti_topic);
 
         muv_mqtt_connect('localhost', 1883, muv_sub_msw_topic, muv_sub_gcs_topic);
     }
@@ -583,19 +583,6 @@ function retrieve_my_cnt_name(callback) {
                 gimbal.baudrate = drone_info.gimbal.baudrate;
             }
 
-            if (drone_info.hasOwnProperty('rf')) {
-                if (drone_info.rf.hasOwnProperty('udp')) {
-                    rf_udp.host = drone_info.rf.udp.addr;
-                    to_rf_address = drone_info.rf.udp.addr;
-                    let addr_arr = drone_info.rf.udp.addr.split('.');
-                    my_rf_address = addr_arr[0] + '.' + addr_arr[1] + '.' + addr_arr[2] + '.' + (parseInt(addr_arr[3]) - 100);
-                    rf_udp.port = drone_info.rf.udp.port;
-
-                    setIPandRoute(my_rf_address);
-                    setTimeout(udp_connect, 500, rf_udp.host, rf_udp.port);
-                }
-            }
-
             // set container for gimbal
             var info = {};
             info.parent = '/Mobius/' + drone_info.gcs;
@@ -636,11 +623,20 @@ function retrieve_my_cnt_name(callback) {
             my_command_parent_name = info.parent;
             my_command_name = my_command_parent_name + '/' + info.name;
 
+            // rf
+            if (drone_info.hasOwnProperty('rf')) {
+                my_rf_host = drone_info.rf.host;
+                my_rf_address = drone_info.rf.addr;
+
+                setIPandRoute(my_rf_address);
+            }
+
             MQTT_SUBSCRIPTION_ENABLE = 1;
             sh_state = 'crtae';
             setTimeout(http_watchdog, normal_interval);
 
             drone_info.id = conf.ae.name;
+            console.log(drone_info);
             fs.writeFileSync('drone_info.json', JSON.stringify(drone_info, null, 4), 'utf8');
 
             callback();
@@ -846,6 +842,79 @@ function mqtt_connect(serverip, sub_gcs_topic, noti_topic) {
 
         mqtt_client.on('error', function (err) {
             console.log('[mqtt_client error] ' + err.message);
+        });
+    }
+}
+
+function rf_mqtt_connect(serverip, sub_gcs_topic, noti_topic) {
+    if (rf_mqtt_client == null) {
+        if (conf.usesecure === 'disable') {
+            var connectOptions = {
+                host: serverip,
+                port: conf.cse.mqttport,
+                protocol: "mqtt",
+                keepalive: 10,
+                protocolId: "MQTT",
+                protocolVersion: 4,
+                clean: true,
+                reconnectPeriod: 2000,
+                connectTimeout: 2000,
+                rejectUnauthorized: false
+            };
+        } else {
+            connectOptions = {
+                host: serverip,
+                port: conf.cse.mqttport,
+                protocol: "mqtts",
+                keepalive: 10,
+                protocolId: "MQTT",
+                protocolVersion: 4,
+                clean: true,
+                reconnectPeriod: 2000,
+                connectTimeout: 2000,
+                key: fs.readFileSync("./server-key.pem"),
+                cert: fs.readFileSync("./server-crt.pem"),
+                rejectUnauthorized: false
+            };
+        }
+
+        rf_mqtt_client = mqtt.connect(connectOptions);
+
+        rf_mqtt_client.on('connect', function () {
+            console.log('fc_mqtt is connected');
+
+            if (sub_gcs_topic != '') {
+                rf_mqtt_client.subscribe(sub_gcs_topic, function () {
+                    console.log('[rf_mqtt_connect] sub_gcs_topic is subscribed: ' + sub_gcs_topic);
+                });
+            }
+
+            // if (noti_topic != '') {
+            //     rf_mqtt_client.subscribe(noti_topic, function () {
+            //         console.log('[rf_mqtt_connect] noti_topic is subscribed:  ' + noti_topic);
+            //     });
+            // }
+        });
+
+        rf_mqtt_client.on('message', function (topic, message) {
+            if (topic == sub_gcs_topic) {
+                tas_mav.gcs_noti_handler(message);
+            } else {
+                // if (topic.includes('/oneM2M/req/')) {
+                //     var jsonObj = JSON.parse(message.toString());
+                //
+                //     if (jsonObj['m2m:rqp'] == null) {
+                //         jsonObj['m2m:rqp'] = jsonObj;
+                //     }
+                //
+                //     noti.mqtt_noti_action(topic.split('/'), jsonObj);
+                // } else {
+                // }
+            }
+        });
+
+        rf_mqtt_client.on('error', function (err) {
+            console.log('[rf_mqtt_client error] ' + err.message);
         });
     }
 }
