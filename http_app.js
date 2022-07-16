@@ -152,7 +152,9 @@ function ready_for_notification() {
         }
         mqtt_connect(conf.cse.host, muv_sub_gcs_topic, noti_topic);
 
-        rf_mqtt_connect(drone_info.rf.host, muv_sub_gcs_topic, noti_topic);
+        if (drone_info.hasOwnProperty('rf')) {
+            rf_mqtt_connect(drone_info.rf.host, muv_sub_gcs_topic, noti_topic);
+        }
 
         muv_mqtt_connect('localhost', 1883, muv_sub_msw_topic, muv_sub_gcs_topic);
     }

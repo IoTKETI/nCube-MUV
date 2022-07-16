@@ -470,8 +470,8 @@ function mavPortData(data) {
                     mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
                     send_aggr_to_Mobius(my_cnt_name, mavPacket, 2000);
                     setTimeout(parseMavFromDrone, 0, mavPacket);
-                    rf_mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
 
+                    rf_mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
 
                     mavStrFromDrone = mavStrFromDrone.substr(mavLength);
                     mavStrFromDroneLength = 0;
@@ -488,8 +488,8 @@ function mavPortData(data) {
                     mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
                     send_aggr_to_Mobius(my_cnt_name, mavPacket, 2000);
                     setTimeout(parseMavFromDrone, 0, mavPacket);
-                    rf_mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
 
+                    rf_mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
 
                     mavStrFromDrone = mavStrFromDrone.substr(mavLength);
                     mavStrFromDroneLength = 0;
