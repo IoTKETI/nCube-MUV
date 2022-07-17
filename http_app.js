@@ -1026,7 +1026,7 @@ function setIPandRoute(host) {
                     }
                     console.log(os.networkInterfaces());
                     // set route
-                    exec('sudo route add -net ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.0 netmask 255.255.255.0 gw ' + my_rf_address, (error, stdout, stderr) => {
+                    exec('sudo route add -net ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.0 netmask 255.255.255.0 gw ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.1', (error, stdout, stderr) => {
                         if (error) {
                             console.error(`[error] in routing table setting : ${error}`);
                             return;
@@ -1053,7 +1053,7 @@ function setIPandRoute(host) {
                 });
             } else {
                 // set route
-                exec('sudo route add -net ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.0 netmask 255.255.255.0 gw ' + my_rf_address, (error, stdout, stderr) => {
+                exec('sudo route add -net ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.0 netmask 255.255.255.0 gw ' + host_arr[0] + '.' + host_arr[1] + '.' + host_arr[2] + '.1', (error, stdout, stderr) => {
                     if (error) {
                         console.error(`[error] in routing table setting : ${error}`);
                         return;
