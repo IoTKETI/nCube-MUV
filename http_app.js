@@ -24,6 +24,7 @@ var moment = require('moment');
 var {spawn, exec} = require('child_process');
 const os = require("os");
 const dgram = require("dgram");
+var {nanoid} = require('nanoid');
 
 global.sh_adn = require('./http_adn');
 var noti = require('./noti');
@@ -858,6 +859,7 @@ function rf_mqtt_connect(serverip, sub_gcs_topic, noti_topic) {
                 keepalive: 10,
                 protocolId: "MQTT",
                 protocolVersion: 4,
+                clientId:'MUV_'+nanoid(15),
                 clean: true,
                 reconnectPeriod: 2000,
                 connectTimeout: 2000,
@@ -871,6 +873,7 @@ function rf_mqtt_connect(serverip, sub_gcs_topic, noti_topic) {
                 keepalive: 10,
                 protocolId: "MQTT",
                 protocolVersion: 4,
+                clientId:'MUV_'+nanoid(15),
                 clean: true,
                 reconnectPeriod: 2000,
                 connectTimeout: 2000,
@@ -1002,7 +1005,6 @@ function send_to_Mobius(topic, content_each_obj, gap) {
 }
 
 function setIPandRoute(host) {
-    console.log(host)
     let host_arr = host.split('.');
 
     var networkInterfaces = os.networkInterfaces();
