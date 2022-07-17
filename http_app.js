@@ -859,7 +859,7 @@ function rf_mqtt_connect(serverip, sub_gcs_topic, noti_topic) {
                 keepalive: 10,
                 protocolId: "MQTT",
                 protocolVersion: 4,
-                clientId:'MUV_'+nanoid(15),
+                clientId: 'MUV_' + nanoid(15),
                 clean: true,
                 reconnectPeriod: 2000,
                 connectTimeout: 2000,
@@ -873,7 +873,7 @@ function rf_mqtt_connect(serverip, sub_gcs_topic, noti_topic) {
                 keepalive: 10,
                 protocolId: "MQTT",
                 protocolVersion: 4,
-                clientId:'MUV_'+nanoid(15),
+                clientId: 'MUV_' + nanoid(15),
                 clean: true,
                 reconnectPeriod: 2000,
                 connectTimeout: 2000,
@@ -903,6 +903,7 @@ function rf_mqtt_connect(serverip, sub_gcs_topic, noti_topic) {
 
         rf_mqtt_client.on('message', function (topic, message) {
             if (topic == sub_gcs_topic) {
+                console.log('[GCS]', topic, message.toString('hex'));
                 tas_mav.gcs_noti_handler(message);
             } else {
                 // if (topic.includes('/oneM2M/req/')) {
