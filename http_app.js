@@ -883,7 +883,7 @@ function rf_mqtt_connect(serverip, sub_gcs_topic, noti_topic) {
         rf_mqtt_client = mqtt.connect(connectOptions);
 
         rf_mqtt_client.on('connect', function () {
-            console.log('fc_mqtt is connected');
+            console.log('rf_mqtt is connected');
 
             if (sub_gcs_topic != '') {
                 rf_mqtt_client.subscribe(sub_gcs_topic, function () {
@@ -1002,6 +1002,7 @@ function send_to_Mobius(topic, content_each_obj, gap) {
 }
 
 function setIPandRoute(host) {
+    console.log(host)
     let host_arr = host.split('.');
 
     var networkInterfaces = os.networkInterfaces();
