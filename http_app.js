@@ -883,7 +883,7 @@ function rf_mqtt_connect(serverip, sub_gcs_topic, noti_topic) {
         rf_mqtt_client = mqtt.connect(connectOptions);
 
         rf_mqtt_client.on('connect', function () {
-            console.log('rf_mqtt is connected');
+            console.log('rf_mqtt is connected to ' + serverip);
 
             if (sub_gcs_topic != '') {
                 rf_mqtt_client.subscribe(sub_gcs_topic, function () {
