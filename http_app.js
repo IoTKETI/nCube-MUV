@@ -153,9 +153,7 @@ function ready_for_notification() {
         }
         mqtt_connect(conf.cse.host, muv_sub_gcs_topic, noti_topic);
 
-        if (drone_info.hasOwnProperty('rf')) {
-            rf_mqtt_connect(drone_info.rf.host, muv_sub_gcs_topic, noti_topic);
-        }
+       
 
         muv_mqtt_connect('localhost', 1883, muv_sub_msw_topic, muv_sub_gcs_topic);
     }
@@ -625,14 +623,6 @@ function retrieve_my_cnt_name(callback) {
 
             my_command_parent_name = info.parent;
             my_command_name = my_command_parent_name + '/' + info.name;
-
-            // rf
-            if (drone_info.hasOwnProperty('rf')) {
-                my_rf_host = drone_info.rf.host;
-                my_rf_address = drone_info.rf.addr;
-
-                setIPandRoute(my_rf_address);
-            }
 
             MQTT_SUBSCRIPTION_ENABLE = 1;
             sh_state = 'crtae';
