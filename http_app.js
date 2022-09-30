@@ -398,16 +398,17 @@ function retrieve_my_cnt_name(callback) {
                 if (drone_info.update === 'enable' || drone_info.update === 'nCube') {
                     const shell = require('shelljs')
 
-                    if (shell.exec('git reset --hard HEAD').code !== 0) {
+                    if (shell.exec('git reset --hard HEAD && git pull').code !== 0) {
                         shell.echo('Error: command failed')
                         shell.exit(1)
                     } else {
-                        if (shell.exec('git pull').code !== 0) {
-                            shell.echo('Error: command failed')
-                            shell.exit(1)
-                        } else {
-                            console.log('Finish update !');
-                        }
+                        console.log('Finish update !');
+                        drone_info.update = 'disable';
+                        sh_adn.crtci('/Mobius/' + conf.ae.approval_gcs + '/approval/' + conf.ae.name, 0, JSON.stringify(drone_info), null, function (){
+                            if (drone_info.update === 'disable'){
+                                shell.exec('pm2 restart MUV')
+                            }
+                        });
                     }
                 }
             }
@@ -511,10 +512,6 @@ function retrieve_my_cnt_name(callback) {
                                     info.name = 'sub_msw';
                                     info.nu = 'mqtt://' + conf.cse.host + '/' + conf.ae.id + '?ct=json';
                                     conf.sub.push(JSON.parse(JSON.stringify(info)));
-
-                                    if (drone_info.hasOwnProperty('control_type')) {
-                                        my_control_type = drone_info.control_type;
-                                    }
                                 }
                             }
                         }
@@ -602,13 +599,19 @@ function retrieve_my_cnt_name(callback) {
             my_gimbal_parent = info.parent;
             my_gimbal_name = my_gimbal_parent + '/' + info.name;
 
-            muv_pub_fc_gpi_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/global_position_int';
-            muv_pub_fc_hb_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/heartbeat';
-            muv_pub_fc_system_time_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/system_time';
-            muv_pub_fc_timesync_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/timesync';
-            muv_pub_fc_attitude_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/attitude';
-            muv_pub_fc_bat_state_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/battery_status';
-            muv_pub_fc_wp_yaw_behavior_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/wp_yaw_behavior';
+            // muv_pub_fc_gpi_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/global_position_int';
+            // muv_pub_fc_hb_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/heartbeat';
+            // muv_pub_fc_system_time_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/system_time';
+            // muv_pub_fc_timesync_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/timesync';
+            // muv_pub_fc_attitude_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/attitude';
+            // muv_pub_fc_bat_state_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/battery_status';
+            // muv_pub_fc_wp_yaw_behavior_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/wp_yaw_behavior';
+            muv_pub_fc_gpi_topic = '/TELE/drone/gpi'
+            muv_pub_fc_hb_topic = '/TELE/drone/hb'
+            muv_pub_fc_wp_yaw_behavior_topic = '/TELE/drone/wp_yaw_behavior'
+            muv_pub_fc_distance_sensor_topic = '/TELE/drone/distance_sensor'
+            muv_pub_fc_timesync_topic = '/TELE/drone/timesync'
+            muv_pub_fc_system_time_topic = '/TELE/drone/system_time'
             muv_sub_gcs_topic = '/Mobius/' + my_gcs_name + '/GCS_Data/' + drone_info.drone;
 
             var info = {};
