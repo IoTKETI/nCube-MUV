@@ -628,7 +628,7 @@ function retrieve_my_cnt_name(callback) {
             my_command_name = my_command_parent_name + '/' + info.name;
 
             MQTT_SUBSCRIPTION_ENABLE = 1;
-            sh_state = 'crtae';
+            sh_state = 'crtct';
             setTimeout(http_watchdog, normal_interval);
 
             drone_info.id = conf.ae.name;
